@@ -23,8 +23,11 @@ const SignUp = () => {
     e.preventDefault();
     setSubmitStatus({ type: '', message: '' });
     try {
-      const response = await api.post('/auth/signup', formData);
-      setSubmitStatus({ type: 'success', message: response.data.message });
+      await api.post('/auth/signup', formData);
+      setSubmitStatus({
+        type: 'success',
+        message: 'Registration successful! Redirecting to sign in...'
+      });
       setTimeout(() => {
         navigate('/signin');
       }, 2000);
