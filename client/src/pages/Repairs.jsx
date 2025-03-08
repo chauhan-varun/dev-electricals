@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { repairs } from '../data/services';
 import { WrenchIcon } from '@heroicons/react/24/outline';
+import AnimatedInput from '../components/AnimatedInput';
 
 const Repairs = () => {
   const [formData, setFormData] = useState({
@@ -71,67 +72,60 @@ const Repairs = () => {
           <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">Name</label>
-              <input
+              <AnimatedInput
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700">Email</label>
-              <input
+              <AnimatedInput
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700">Phone</label>
-              <input
+              <AnimatedInput
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700">Repair Category</label>
-              <select
+              <AnimatedInput
+                as="select"
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-              >
-                <option value="">Select a category</option>
-                {repairs.map(repair => (
-                  <option key={repair.id} value={repair.category}>
-                    {repair.category}
-                  </option>
-                ))}
-              </select>
+                options={repairs.map(repair => ({
+                  value: repair.category,
+                  label: repair.category
+                }))}
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700">Issue Description</label>
-              <textarea
+              <AnimatedInput
+                as="textarea"
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                rows={4}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                 placeholder="Please describe the issue you're experiencing..."
               />
             </div>
@@ -139,30 +133,30 @@ const Repairs = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Preferred Date</label>
-                <input
+                <AnimatedInput
                   type="date"
                   name="preferredDate"
                   value={formData.preferredDate}
                   onChange={handleInputChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Preferred Time</label>
-                <select
+                <AnimatedInput
+                  as="select"
                   name="preferredTime"
                   value={formData.preferredTime}
                   onChange={handleInputChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                >
-                  <option value="">Select time</option>
-                  <option value="morning">Morning (9AM - 12PM)</option>
-                  <option value="afternoon">Afternoon (12PM - 4PM)</option>
-                  <option value="evening">Evening (4PM - 7PM)</option>
-                </select>
+                  options={[
+                    { value: "", label: "Select time" },
+                    { value: "morning", label: "Morning (9AM - 12PM)" },
+                    { value: "afternoon", label: "Afternoon (12PM - 4PM)" },
+                    { value: "evening", label: "Evening (4PM - 7PM)" }
+                  ]}
+                />
               </div>
             </div>
 
@@ -179,4 +173,4 @@ const Repairs = () => {
   );
 };
 
-export default Repairs; 
+export default Repairs;

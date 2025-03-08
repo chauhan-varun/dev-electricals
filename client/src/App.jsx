@@ -1,8 +1,10 @@
 import { 
   createBrowserRouter, 
   RouterProvider,
-  Outlet
+  Outlet,
+  useLocation
 } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Products from './pages/Products';
@@ -23,12 +25,22 @@ import ScheduleRepair from './pages/ScheduleRepair';
 
 // Layout component that includes the Navbar
 const Layout = () => {
+  const location = useLocation();
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="pt-28">
-        <Outlet />
-      </main>
+      <AnimatePresence mode="wait">
+        <motion.main
+          key={location.pathname}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="pt-28"
+        >
+          <Outlet />
+        </motion.main>
+      </AnimatePresence>
     </div>
   );
 };

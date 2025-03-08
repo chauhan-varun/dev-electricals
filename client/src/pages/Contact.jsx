@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import AnimatedInput from '../components/AnimatedInput';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -117,46 +119,43 @@ const Contact = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">Name</label>
-              <input
+              <AnimatedInput
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Email</label>
-              <input
+              <AnimatedInput
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Subject</label>
-              <input
+              <AnimatedInput
                 type="text"
                 name="subject"
                 value={formData.subject}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Message</label>
-              <textarea
+              <AnimatedInput
+                as="textarea"
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
                 required
                 rows={4}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
               />
             </div>
             <button
