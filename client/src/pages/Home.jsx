@@ -11,7 +11,7 @@ const Home = () => {
       id: 1,
       name: 'Electrical Installation',
       description: 'Professional installation services for your home or office',
-      price: 'From $99',
+      price: 'From ₹99',
     },
     // Add more services...
   ];

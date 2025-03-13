@@ -1,11 +1,28 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { removeFromCart, updateQuantity } from '../store/cartSlice';
+import { useAuth } from '../contexts/AuthContext';
+import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 const Cart = () => {
   const { items, total } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
+  const { currentUser, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast.error('Please sign in to view your cart', {
+        position: 'top-center',
+        duration: 4000,
+        style: { background: '#EF4444', color: 'white' }
+      });
+      navigate('/signin');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleQuantityChange = (id, quantity) => {
     if (quantity < 1) return;
@@ -80,7 +97,7 @@ const Cart = () => {
                           </button>
                         </div>
                         <p className="text-lg font-medium text-gray-900">
-                          ${(item.price * item.quantity).toFixed(2)}
+                        ₹{(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     </div>

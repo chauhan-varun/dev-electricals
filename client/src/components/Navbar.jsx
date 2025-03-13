@@ -3,13 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon, ShoppingCartIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { itemCount } = useSelector((state) => state.cart);
-  const token = localStorage.getItem('token');
   const navigate = useNavigate();
+  const { currentUser, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,8 +30,20 @@ const Navbar = () => {
   }, []);
 
   const handleSignOut = () => {
-    localStorage.removeItem('token');
+    logout();
     navigate('/signin');
+  };
+  
+  const handleCartClick = (e) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      toast.error('Please sign in to view your cart', {
+        position: 'top-center',
+        duration: 4000,
+        style: { background: '#EF4444', color: 'white' }
+      });
+      navigate('/signin');
+    }
   };
 
   const navigation = [
@@ -65,13 +79,13 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            <Link to="/cart" className="text-secondary hover:text-primary relative">
+            <Link to="/cart" className="text-secondary hover:text-primary relative" onClick={handleCartClick}>
               <ShoppingCartIcon className="h-6 w-6" />
               <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
                 {itemCount}
               </span>
             </Link>
-            {!token ? (
+            {!isAuthenticated ? (
               <Link
                 to="/signin"
                 className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ease-in-out flex items-center gap-2"
@@ -116,7 +130,7 @@ const Navbar = () => {
                 className="md:hidden bg-white/80 backdrop-blur-lg"
               >
                 <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                  {!token ? (
+                  {!isAuthenticated ? (
                     <Link
                       to="/signin"
                       className="bg-primary hover:bg-primary-dark text-white block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ease-in-out"
@@ -148,7 +162,10 @@ const Navbar = () => {
                   <Link
                     to="/cart"
                     className="text-secondary hover:text-primary block px-3 py-2 text-base font-medium"
-                    onClick={() => setIsOpen(false)}
+                    onClick={(e) => {
+                      setIsOpen(false);
+                      handleCartClick(e);
+                    }}
                   >
                     Cart ({itemCount})
                   </Link>

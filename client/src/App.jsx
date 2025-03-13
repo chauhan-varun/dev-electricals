@@ -5,6 +5,8 @@ import {
   useLocation
 } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Products from './pages/Products';
@@ -22,6 +24,7 @@ import SignUp from './pages/SignUp';
 import ProductDetails from './pages/ProductDetails';
 import ServiceBooking from './pages/ServiceBooking';
 import ScheduleRepair from './pages/ScheduleRepair';
+import GoogleAuthCallback from './components/GoogleAuthCallback';
 
 // Layout component that includes the Navbar
 const Layout = () => {
@@ -48,76 +51,83 @@ const Layout = () => {
 // Create router with the new configuration and both future flags
 const router = createBrowserRouter([
   {
+    path: "/",
     element: <Layout />,
     children: [
       {
-        path: "/",
+        index: true,
         element: <Home />,
       },
       {
-        path: "/products",
+        path: "products",
         element: <Products />,
       },
       {
-        path: "/services",
+        path: "services",
         element: <Services />,
       },
       {
-        path: "/repairs",
+        path: "repairs",
         element: <Repairs />,
       },
       {
-        path: "/sell",
+        path: "sell",
         element: <Sell />,
       },
       {
-        path: "/cart",
+        path: "cart",
         element: <Cart />,
       },
       {
-        path: "/contact",
+        path: "contact",
         element: <Contact />,
       },
       {
-        path: "/checkout",
+        path: "checkout",
         element: <Checkout />,
       },
       {
-        path: "/order-confirmation",
+        path: "order-confirmation",
         element: <OrderConfirmation />,
       },
       {
-        path: "/admin",
+        path: "admin",
         element: <Dashboard />,
         children: [
           {
-            path: "",
+            index: true,
             element: <Overview />,
           },
         ],
       },
       {
-        path: "/signin",
+        path: "signin",
         element: <SignIn />,
       },
       {
-        path: "/signup",
+        path: "signup",
         element: <SignUp />,
       },
       {
-        path: "/products/:id",
+        path: "products/:id",
         element: <ProductDetails />,
       },
       {
-        path: "/service-booking",
+        path: "service-booking",
         element: <ServiceBooking />,
       },
       {
-        path: "/schedule-repair",
+        path: "schedule-repair",
         element: <ScheduleRepair />,
       },
     ],
   },
+  // Add a route for handling Google Auth Callback outside of the Layout
+  // This ensures it doesn't show the navbar during processing
+  {
+    path: "/auth/google/callback",
+    element: <GoogleAuthCallback />,
+  }
 ], {
   future: {
     v7_relativeSplatPath: true,
@@ -126,7 +136,29 @@ const router = createBrowserRouter([
 });
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          success: {
+            style: {
+              background: '#10B981',
+              color: 'white',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+              color: 'white',
+            },
+          },
+        }}
+      />
+    </AuthProvider>
+  );
 }
 
 export default App;
