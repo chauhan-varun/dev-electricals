@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/axios';
+import Toast from '../components/Toast';
 
 const Sell = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ const Sell = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
 
   useEffect(() => {
@@ -93,6 +95,7 @@ const Sell = () => {
         type: 'success',
         message: 'Your product has been submitted successfully! We will review it shortly.'
       });
+      setShowToast(true);
       setFormData({
         title: '',
         description: '',
@@ -110,15 +113,23 @@ const Sell = () => {
     } catch (error) {
       setSubmitStatus({
         type: 'error',
-        message: error.response?.data?.message || 'An error occurred while submitting your product.'
+        message: error.response?.data?.message || 'Failed to submit product. Please try again.'
       });
+      setShowToast(true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      {showToast && (
+        <Toast
+          message={submitStatus.message}
+          type={submitStatus.type}
+          onClose={() => setShowToast(false)}
+        />
+      )}
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Sell Your Used Electrical Items</h1>
         
