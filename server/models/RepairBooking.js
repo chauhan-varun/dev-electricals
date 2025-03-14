@@ -7,6 +7,7 @@ const repairBookingSchema = new mongoose.Schema({
   repairType: { type: String, required: true },
   date: { type: Date, required: true },
   time: { type: String, required: true },
-});
+  status: { type: String, enum: ['pending', 'in-progress', 'completed', 'cancelled'], default: 'pending' }
+}, { timestamps: true });
 
-module.exports = mongoose.model('RepairBooking', repairBookingSchema); 
+module.exports = mongoose.model('RepairBooking', repairBookingSchema);

@@ -3,6 +3,17 @@ const User = require('../models/User'); // Assuming you have a User model
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+
+// Get all users (protected route for admin)
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.find({}, '-password');
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users' });
+  }
+});
 const { OAuth2Client } = require('google-auth-library');
 const axios = require('axios');
 
@@ -219,11 +230,33 @@ const verifyToken = (req, res, next) => {
 router.get('/user', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     res.json(user);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Error fetching user data' });
+  }
+});
+
+// Delete a user (admin route)
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({ 
+      message: 'User deleted successfully',
+      deletedId: req.params.id 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error deleting user', 
+      error: error.message 
+    });
   }
 });
 

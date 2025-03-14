@@ -7,6 +7,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
+import { CartProvider } from './contexts/CartContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Products from './pages/Products';
@@ -19,12 +20,15 @@ import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import Dashboard from './pages/admin/Dashboard';
 import Overview from './pages/admin/Overview';
+import Orders from './pages/admin/Orders';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import ProductDetails from './pages/ProductDetails';
 import ServiceBooking from './pages/ServiceBooking';
 import ScheduleRepair from './pages/ScheduleRepair';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
+import ProductsPage from './pages/ProductsPage';
+import ProductDetailPage from './pages/ProductDetailPage';
 
 // Layout component that includes the Navbar
 const Layout = () => {
@@ -60,7 +64,11 @@ const router = createBrowserRouter([
       },
       {
         path: "products",
-        element: <Products />,
+        element: <ProductsPage />,
+      },
+      {
+        path: "products/:id",
+        element: <ProductDetailPage />,
       },
       {
         path: "services",
@@ -98,6 +106,22 @@ const router = createBrowserRouter([
             index: true,
             element: <Overview />,
           },
+          {
+            path: "orders",
+            element: <Orders />,
+          },
+          {
+            path: "products",
+            element: <Overview />,
+          },
+          {
+            path: "services",
+            element: <Overview />,
+          },
+          {
+            path: "customers",
+            element: <Overview />,
+          },
         ],
       },
       {
@@ -107,10 +131,6 @@ const router = createBrowserRouter([
       {
         path: "signup",
         element: <SignUp />,
-      },
-      {
-        path: "products/:id",
-        element: <ProductDetails />,
       },
       {
         path: "service-booking",
@@ -138,25 +158,19 @@ const router = createBrowserRouter([
 function App() {
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
-      <Toaster 
-        position="top-center"
-        toastOptions={{
-          duration: 4000,
-          success: {
+      <CartProvider>
+        <Toaster 
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
             style: {
-              background: '#10B981',
-              color: 'white',
+              background: '#333',
+              color: '#fff',
             },
-          },
-          error: {
-            style: {
-              background: '#EF4444',
-              color: 'white',
-            },
-          },
-        }}
-      />
+          }}
+        />
+        <RouterProvider router={router} />
+      </CartProvider>
     </AuthProvider>
   );
 }

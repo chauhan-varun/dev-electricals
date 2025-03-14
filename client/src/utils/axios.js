@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Auth API client for authentication endpoints
 const authApi = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/auth`,
+  baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -28,6 +28,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error("API request interceptor error:", error);
     return Promise.reject(error);
   }
 );
@@ -42,6 +43,7 @@ authApi.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error("Auth API request interceptor error:", error);
     return Promise.reject(error);
   }
 );
@@ -49,11 +51,11 @@ authApi.interceptors.request.use(
 // Response interceptor for main API
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      // Handle unauthorized errors
-      localStorage.removeItem('token');
-    }
+  async (error) => {
+    console.error("API response error:", error.response || error);
+    
+    // If the error is due to an expired token, you can handle token refresh here
+    // For now, we're just propagating the error
     return Promise.reject(error);
   }
 );
@@ -61,7 +63,11 @@ api.interceptors.response.use(
 // Response interceptor for auth API
 authApi.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    console.error("Auth API response error:", error.response || error);
+    
+    // If the error is due to an expired token, you can handle token refresh here
+    // For now, we're just propagating the error
     if (error.response && error.response.status === 401) {
       // Handle unauthorized errors
       localStorage.removeItem('token');

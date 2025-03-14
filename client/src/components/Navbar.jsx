@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon, ShoppingCartIcon, UserIcon } from '@heroicons/react/24/outline';
-import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { CartContext } from '../contexts/CartContext';
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { itemCount } = useSelector((state) => state.cart);
+  const { itemCount } = useContext(CartContext);
   const navigate = useNavigate();
   const { currentUser, isAuthenticated, logout } = useAuth();
 
@@ -79,16 +79,16 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            <Link to="/cart" className="text-secondary hover:text-primary relative" onClick={handleCartClick}>
+            <Link to="/cart" className="text-gray-600 hover:text-blue-600 relative" onClick={handleCartClick}>
               <ShoppingCartIcon className="h-6 w-6" />
-              <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
+              <span className="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
                 {itemCount}
               </span>
             </Link>
             {!isAuthenticated ? (
               <Link
                 to="/signin"
-                className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ease-in-out flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ease-in-out flex items-center gap-2"
               >
                 <UserIcon className="h-5 w-5" />
                 Sign In
@@ -96,7 +96,7 @@ const Navbar = () => {
             ) : (
               <button
                 onClick={handleSignOut}
-                className="bg-secondary hover:bg-secondary-dark text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ease-in-out flex items-center gap-2"
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ease-in-out flex items-center gap-2"
               >
                 <UserIcon className="h-5 w-5" />
                 Sign Out
@@ -133,7 +133,7 @@ const Navbar = () => {
                   {!isAuthenticated ? (
                     <Link
                       to="/signin"
-                      className="bg-primary hover:bg-primary-dark text-white block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ease-in-out"
+                      className="bg-blue-600 hover:bg-blue-700 text-white block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ease-in-out"
                       onClick={() => setIsOpen(false)}
                     >
                       Sign In
@@ -144,7 +144,7 @@ const Navbar = () => {
                         handleSignOut();
                         setIsOpen(false);
                       }}
-                      className="bg-secondary hover:bg-secondary-dark text-white block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ease-in-out"
+                      className="bg-gray-600 hover:bg-gray-700 text-white block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ease-in-out"
                     >
                       Sign Out
                     </button>

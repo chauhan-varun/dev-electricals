@@ -18,7 +18,7 @@ const corsOptions = {
     ? [process.env.CLIENT_URL]
     : ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-auth-token'],
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -58,13 +58,14 @@ mongoose.connect(process.env.MONGODB_URI)
   });
 
 // Routes
+app.use('/api', require('./routes/api')); // Add the new API routes
 app.use('/api/products', require('./routes/products'));
 app.use('/api/services', require('./routes/services'));
 app.use('/api/repairs', require('./routes/repairs'));
+app.use('/api/auth', cors(corsOptions), require('./routes/auth')); // Auth routes with CORS
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/sell', require('./routes/sell'));
-// Make sure the auth routes have CORS enabled
-app.use('/auth', cors(corsOptions), require('./routes/auth')); // Changed from /api/auth to /auth to match client expectations
+app.use('/api/used-products', require('./routes/used-products')); // Add Used Products routes
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));
