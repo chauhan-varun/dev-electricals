@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     
     try {
       // In a real application, this would be an API call
-      if (email === 'admindev@ele.co.in' && password === 'beautybehindthemadness') {
+      if (email === import.meta.env.VITE_EMAIL && password === import.meta.env.VITE_PASSWORD) {
         setIsAuthenticated(true);
         localStorage.setItem('isAuthenticated', 'true');
         return true;
