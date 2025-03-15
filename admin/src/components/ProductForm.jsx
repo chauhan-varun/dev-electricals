@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { createProduct, updateProduct } from '../services/api';
 import { isCloudinaryUrl, optimizeCloudinaryUrl } from '../utils/cloudinary';
+import Loader from './UI/Loader';
 
 const categories = [
   "Appliances",
@@ -433,15 +434,23 @@ const ProductForm = ({ product = null, onSave, onCancel }) => {
           type="button"
           onClick={onCancel}
           className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          disabled={loading}
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className={`px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 ${loading ? 'opacity-90 cursor-not-allowed' : ''}`}
         >
-          {loading ? 'Saving...' : isEdit ? 'Update Product' : 'Create Product'}
+          {loading ? (
+            <span className="flex items-center justify-center">
+              <Loader size={14} className="mr-2" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            isEdit ? 'Update Product' : 'Create Product'
+          )}
         </button>
       </div>
     </form>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchUsers } from '../services/api';
+import Loader from './UI/Loader';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -25,8 +26,9 @@ const UserManagement = () => {
   }, []);
 
   if (loading) return (
-    <div className="flex items-center justify-center py-8">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+    <div className="flex flex-col items-center justify-center py-8 h-64">
+      <Loader size={30} />
+      <p className="mt-4 text-red-600 font-medium">Loading users...</p>
     </div>
   );
   

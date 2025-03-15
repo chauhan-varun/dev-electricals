@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { fetchUsedProducts, approveUsedProduct, denyUsedProduct } from '../services/api';
 import { toast } from 'react-hot-toast';
+import Loader from './UI/Loader';
 
 const UsedProductsManagement = () => {
   const [usedProducts, setUsedProducts] = useState([]);
@@ -104,8 +105,9 @@ const UsedProductsManagement = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+      <div className="flex flex-col justify-center items-center h-64">
+        <Loader size={30} />
+        <p className="mt-4 text-red-600 font-medium">Loading used products...</p>
       </div>
     );
   }
@@ -149,17 +151,24 @@ const UsedProductsManagement = () => {
             <div className="flex justify-end space-x-2">
               <button
                 onClick={handleDenyModalCancel}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                 disabled={processingAction}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDenyModalSubmit}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                 disabled={processingAction}
+                className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700 flex items-center"
               >
-                {processingAction ? 'Processing...' : 'Confirm Deny'}
+                {processingAction ? (
+                  <>
+                    <Loader size={14} className="mr-2" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  'Confirm Denial'
+                )}
               </button>
             </div>
           </div>

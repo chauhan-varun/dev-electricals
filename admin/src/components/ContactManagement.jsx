@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { format } from 'date-fns'
 import { API_URL } from '../config'
+import Loader from './UI/Loader'
 
 const ContactManagement = () => {
   const [contacts, setContacts] = useState([])
@@ -104,8 +105,9 @@ const ContactManagement = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center my-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+        <div className="flex flex-col justify-center items-center my-8 h-48">
+          <Loader size={30} />
+          <p className="mt-4 text-red-600 font-medium">Loading contact messages...</p>
         </div>
       ) : error ? (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">

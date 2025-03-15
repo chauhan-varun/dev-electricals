@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import Loader from './UI/Loader';
 
 const Login = () => {
   const { login, error: authError } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     await login(username, password);
+    setIsLoading(false);
   };
 
   return (
@@ -63,8 +67,16 @@ const Login = () => {
             <button
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              disabled={isLoading}
             >
-              Sign in
+              {isLoading ? (
+                <span className="flex items-center">
+                  <Loader size={12} className="mr-2" />
+                  Processing...
+                </span>
+              ) : (
+                'Sign in'
+              )}
             </button>
           </div>
         </form>

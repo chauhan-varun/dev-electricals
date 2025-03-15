@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 import { fetchProducts, deleteProduct } from '../services/api';
 import ProductForm from './ProductForm';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+import Loader from './UI/Loader';
 
 const ProductManager = () => {
   const [products, setProducts] = useState([]);
@@ -90,8 +91,9 @@ const ProductManager = () => {
 
   if (loading && products.length === 0) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+      <div className="flex flex-col justify-center items-center h-64">
+        <Loader size={30} />
+        <p className="mt-4 text-red-600 font-medium">Loading products...</p>
       </div>
     );
   }

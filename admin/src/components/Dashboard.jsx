@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import ProductManager from './ProductManager';
+import Loader from './UI/Loader';
 
 const Dashboard = ({ view }) => {
   const [data, setData] = useState([]);
@@ -225,12 +226,13 @@ const Dashboard = ({ view }) => {
     if (loading && activeTab !== 'products') {
       return (
         <motion.div 
-          className="flex justify-center items-center h-64"
+          className="flex flex-col justify-center items-center h-64"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+          <Loader size={30} />
+          <p className="mt-4 text-red-600 font-medium">Loading {activeTab}...</p>
         </motion.div>
       );
     }

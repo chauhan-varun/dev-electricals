@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchOrders, updateOrderStatus } from '../services/api';
+import Loader from './UI/Loader';
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -61,8 +62,9 @@ const OrderManagement = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex flex-col justify-center items-center h-64">
+        <Loader size={30} />
+        <p className="mt-4 text-red-600 font-medium">Loading orders...</p>
       </div>
     );
   }
