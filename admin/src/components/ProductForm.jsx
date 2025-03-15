@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { createProduct, updateProduct } from '../services/api';
+import { isCloudinaryUrl, optimizeCloudinaryUrl } from '../utils/cloudinary';
 
 const categories = [
   "Appliances",
@@ -55,10 +56,10 @@ const ProductForm = ({ product = null, onSave, onCancel }) => {
       // Handle existing images
       if (product.imageUrls && product.imageUrls.length > 0) {
         setImageUrls(product.imageUrls);
-        setImagePreviewUrls(product.imageUrls);
+        setImagePreviewUrls(product.imageUrls.map(url => isCloudinaryUrl(url) ? optimizeCloudinaryUrl(url) : url));
       } else if (product.imageUrl) {
         setImageUrls([product.imageUrl]);
-        setImagePreviewUrls([product.imageUrl]);
+        setImagePreviewUrls([isCloudinaryUrl(product.imageUrl) ? optimizeCloudinaryUrl(product.imageUrl) : product.imageUrl]);
       }
     }
   }, [product]);
@@ -199,226 +200,246 @@ const ProductForm = ({ product = null, onSave, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Product Title *
-        </label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          className={`w-full p-2 border rounded-md ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
-          placeholder="Enter product title"
-        />
-        {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description *
-        </label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows="4"
-          className={`w-full p-2 border rounded-md ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
-          placeholder="Enter product description"
-        ></textarea>
-        {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Category *
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+            Product Title*
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            className={`mt-1 block w-full rounded-md border ${errors.title ? 'border-red-500' : 'border-gray-300'} shadow-sm p-2`}
+          />
+          {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
+        </div>
+
+        {/* Category */}
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+            Category*
           </label>
           <select
+            id="category"
             name="category"
             value={formData.category}
             onChange={handleChange}
-            className={`w-full p-2 border rounded-md ${errors.category ? 'border-red-500' : 'border-gray-300'}`}
+            className={`mt-1 block w-full rounded-md border ${errors.category ? 'border-red-500' : 'border-gray-300'} shadow-sm p-2`}
           >
-            <option value="">Select a category</option>
+            <option value="">Select Category</option>
             {categories.map(category => (
               <option key={category} value={category}>{category}</option>
             ))}
           </select>
-          {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
+          {errors.category && <p className="mt-1 text-sm text-red-500">{errors.category}</p>}
         </div>
-        
+
+        {/* Price */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Price (₹) *
+          <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+            Price (₹)*
           </label>
           <input
             type="number"
+            id="price"
             name="price"
             value={formData.price}
             onChange={handleChange}
             min="0"
             step="0.01"
-            className={`w-full p-2 border rounded-md ${errors.price ? 'border-red-500' : 'border-gray-300'}`}
-            placeholder="0.00"
+            className={`mt-1 block w-full rounded-md border ${errors.price ? 'border-red-500' : 'border-gray-300'} shadow-sm p-2`}
           />
-          {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
+          {errors.price && <p className="mt-1 text-sm text-red-500">{errors.price}</p>}
         </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {/* Stock */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Stock
+          <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
+            Stock Quantity
           </label>
           <input
             type="number"
+            id="stock"
             name="stock"
             value={formData.stock}
             onChange={handleChange}
             min="0"
-            className={`w-full p-2 border rounded-md ${errors.stock ? 'border-red-500' : 'border-gray-300'}`}
-            placeholder="0"
+            className={`mt-1 block w-full rounded-md border ${errors.stock ? 'border-red-500' : 'border-gray-300'} shadow-sm p-2`}
           />
-          {errors.stock && <p className="text-red-500 text-xs mt-1">{errors.stock}</p>}
+          {errors.stock && <p className="mt-1 text-sm text-red-500">{errors.stock}</p>}
         </div>
-        
+
+        {/* Brand */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="brand" className="block text-sm font-medium text-gray-700">
             Brand
           </label>
           <input
             type="text"
+            id="brand"
             name="brand"
             value={formData.brand}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Enter brand name"
+            className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2"
           />
         </div>
-      </div>
-      
-      <div className="flex flex-wrap items-center gap-6">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="featured"
-            name="featured"
-            checked={formData.featured}
-            onChange={handleChange}
-            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-          />
-          <label htmlFor="featured" className="ml-2 block text-sm text-gray-700">
-            Featured Product
-          </label>
+
+        {/* Checkboxes */}
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="featured"
+              name="featured"
+              checked={formData.featured}
+              onChange={handleChange}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <label htmlFor="featured" className="ml-2 block text-sm text-gray-700">
+              Featured Product
+            </label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isRefurbished"
+              name="isRefurbished"
+              checked={formData.isRefurbished}
+              onChange={handleChange}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <label htmlFor="isRefurbished" className="ml-2 block text-sm text-gray-700">
+              Refurbished Product
+            </label>
+          </div>
         </div>
         
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="isRefurbished"
-            name="isRefurbished"
-            checked={formData.isRefurbished}
-            onChange={handleChange}
-            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-          />
-          <label htmlFor="isRefurbished" className="ml-2 block text-sm text-gray-700">
-            Refurbished Product
-          </label>
-        </div>
+        {/* Condition (visible only for refurbished products) */}
+        {formData.isRefurbished && (
+          <div>
+            <label htmlFor="condition" className="block text-sm font-medium text-gray-700">
+              Condition*
+            </label>
+            <select
+              id="condition"
+              name="condition"
+              value={formData.condition}
+              onChange={handleChange}
+              className={`mt-1 block w-full rounded-md border ${errors.condition ? 'border-red-500' : 'border-gray-300'} shadow-sm p-2`}
+            >
+              <option value="">Select Condition</option>
+              <option value="Excellent">Excellent</option>
+              <option value="Good">Good</option>
+              <option value="Fair">Fair</option>
+            </select>
+            {errors.condition && <p className="mt-1 text-sm text-red-500">{errors.condition}</p>}
+          </div>
+        )}
       </div>
       
-      {formData.isRefurbished && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Condition *
-          </label>
-          <select
-            name="condition"
-            value={formData.condition}
-            onChange={handleChange}
-            className={`w-full p-2 border rounded-md ${errors.condition ? 'border-red-500' : 'border-gray-300'}`}
-          >
-            <option value="">Select condition</option>
-            <option value="Like New">Like New</option>
-            <option value="Good">Good</option>
-            <option value="Fair">Fair</option>
-            <option value="Poor">Poor</option>
-          </select>
-          {errors.condition && <p className="text-red-500 text-xs mt-1">{errors.condition}</p>}
-        </div>
-      )}
-      
+      {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Product Images *
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+          Description*
         </label>
-        <div className={`border ${errors.images ? 'border-red-500' : 'border-gray-300'} rounded-md p-4`}>
-          {/* Image preview grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+        <textarea
+          id="description"
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          rows={4}
+          className={`mt-1 block w-full rounded-md border ${errors.description ? 'border-red-500' : 'border-gray-300'} shadow-sm p-2`}
+        ></textarea>
+        {errors.description && <p className="mt-1 text-sm text-red-500">{errors.description}</p>}
+      </div>
+      
+      {/* Image Upload */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Product Images*
+        </label>
+        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+          <div className="space-y-1 text-center">
+            <svg
+              className="mx-auto h-12 w-12 text-gray-400"
+              stroke="currentColor"
+              fill="none"
+              viewBox="0 0 48 48"
+              aria-hidden="true"
+            >
+              <path
+                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <div className="flex text-sm text-gray-600">
+              <label
+                htmlFor="file-upload"
+                className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+              >
+                <span>Upload images</span>
+                <input
+                  id="file-upload"
+                  name="file-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={handleImageChange}
+                  ref={fileInputRef}
+                />
+              </label>
+              <p className="pl-1">or drag and drop</p>
+            </div>
+            <p className="text-xs text-gray-500">PNG, JPG, WEBP up to 10MB</p>
+          </div>
+        </div>
+        {errors.images && <p className="mt-1 text-sm text-red-500">{errors.images}</p>}
+        
+        {/* Image Previews */}
+        {imagePreviewUrls.length > 0 && (
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {imagePreviewUrls.map((url, index) => (
-              <div key={index} className="relative aspect-square border rounded-md overflow-hidden">
-                <img 
-                  src={url} 
-                  alt={`Product preview ${index + 1}`} 
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = '/images/placeholder.png';
-                    e.target.classList.add('opacity-50');
-                  }}
+              <div key={index} className="relative overflow-hidden rounded-md h-32">
+                <img
+                  src={url}
+                  alt={`Preview ${index + 1}`}
+                  className="h-full w-full object-cover"
                 />
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                  aria-label="Remove image"
+                  className="absolute top-1 right-1 bg-gray-800 bg-opacity-75 text-white rounded-full p-1"
                 >
-                  &times;
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
             ))}
-            
-            {/* Add image button */}
-            <div 
-              onClick={() => fileInputRef.current.click()}
-              className="aspect-square border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span className="text-sm text-gray-500 mt-1">Add Image</span>
-            </div>
           </div>
-          
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageChange}
-            className="hidden"
-          />
-          
-          <p className="text-sm text-gray-500">
-            Click "Add Image" to upload product images. You can upload multiple images.
-          </p>
-        </div>
-        {errors.images && <p className="text-red-500 text-xs mt-1">{errors.images}</p>}
+        )}
       </div>
       
+      {/* Form Actions */}
       <div className="flex justify-end space-x-3">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-          disabled={loading}
+          className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           disabled={loading}
+          className={`px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {loading ? 'Saving...' : isEdit ? 'Update Product' : 'Create Product'}
         </button>

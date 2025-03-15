@@ -4,6 +4,7 @@ import { CartContext } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import { createOrder } from '../services/api';
+import Loader from '../components/UI/Loader';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -197,13 +198,20 @@ const Checkout = () => {
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="mt-6">
               <button
                 type="submit"
-                disabled={loading}
-                className={`inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                className="w-full bg-blue-600 py-3 px-6 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={loading || cart.length === 0}
               >
-                {loading ? 'Processing...' : 'Place Order'}
+                {loading ? (
+                  <div className="flex justify-center items-center">
+                    <Loader size={24} className="mr-2" />
+                    <span>Processing Order...</span>
+                  </div>
+                ) : (
+                  'Place Order'
+                )}
               </button>
             </div>
           </form>

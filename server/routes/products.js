@@ -1,49 +1,11 @@
 const router = require('express').Router();
 const Product = require('../models/Product');
-const multer = require('multer');
+const { upload, cloudinary } = require('../config/cloudinary');
 const path = require('path');
 const fs = require('fs');
 
-// Configure multer for image upload
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    // Create uploads directory if it doesn't exist
-    if (!fs.existsSync('./uploads')) {
-      fs.mkdirSync('./uploads');
-    }
-    // Create dedicated directory for product images
-    if (!fs.existsSync('./uploads/products')) {
-      fs.mkdirSync('./uploads/products');
-    }
-    cb(null, './uploads/products/');
-  },
-  filename: function(req, file, cb) {
-    // Generate a unique filename with original extension
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'product-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10000000 }, // 10MB limit
-  fileFilter: function(req, file, cb) {
-    checkFileType(file, cb);
-  }
-});
-
-// Check file type
-function checkFileType(file, cb) {
-  const filetypes = /jpeg|jpg|png|webp/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb(new Error('Error: Images Only!'));
-  }
-}
+// We're now using Cloudinary for image uploads instead of local storage
+// The old multer diskStorage configuration has been replaced
 
 // Get all products
 router.get('/', async (req, res) => {
@@ -101,7 +63,7 @@ router.post('/', upload.array('productImages', 5), async (req, res) => {
     
     // Add uploaded files
     if (req.files && req.files.length > 0) {
-      imageUrls = req.files.map(file => `uploads/products/${file.filename}`);
+      imageUrls = req.files.map(file => file.path);
     }
     
     // Add existing image URLs if provided
@@ -136,7 +98,7 @@ router.post('/', upload.array('productImages', 5), async (req, res) => {
     // Delete uploaded files if there was an error
     if (req.files) {
       req.files.forEach(file => {
-        fs.unlinkSync(file.path);
+        cloudinary.uploader.destroy(file.public_id);
       });
     }
     
@@ -170,7 +132,7 @@ router.put('/:id', upload.array('productImages', 5), async (req, res) => {
     
     // Add uploaded new files
     if (req.files && req.files.length > 0) {
-      const newImageUrls = req.files.map(file => `uploads/products/${file.filename}`);
+      const newImageUrls = req.files.map(file => file.path);
       imageUrls = [...imageUrls, ...newImageUrls];
     }
     
@@ -189,19 +151,17 @@ router.put('/:id', upload.array('productImages', 5), async (req, res) => {
     // Find paths that were on the old product but not included in existingImageUrls
     const removedImages = oldImages.filter(oldUrl => {
       // Only consider local files, not external URLs
-      if (!oldUrl.startsWith('uploads/')) return false;
+      if (!oldUrl.startsWith('https://res.cloudinary.com/')) return false;
       
       // If it's not in the current imageUrls, it was removed
       return !imageUrls.includes(oldUrl);
     });
     
     // Delete the removed image files
-    removedImages.forEach(imgPath => {
-      const fullPath = path.join(__dirname, '..', imgPath);
-      if (fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath);
-        console.log(`Deleted removed image: ${fullPath}`);
-      }
+    removedImages.forEach(imgUrl => {
+      const publicId = imgUrl.split('/').pop().split('.')[0];
+      cloudinary.uploader.destroy(publicId);
+      console.log(`Deleted removed image: ${imgUrl}`);
     });
     
     // Update the product
@@ -230,7 +190,7 @@ router.put('/:id', upload.array('productImages', 5), async (req, res) => {
     // Delete uploaded files if there was an error
     if (req.files) {
       req.files.forEach(file => {
-        fs.unlinkSync(file.path);
+        cloudinary.uploader.destroy(file.public_id);
       });
     }
     
@@ -250,12 +210,10 @@ router.delete('/:id', async (req, res) => {
     if (product.imageUrls && product.imageUrls.length > 0) {
       product.imageUrls.forEach(imgUrl => {
         // Only delete local files, not external URLs
-        if (imgUrl.startsWith('uploads/')) {
-          const filePath = path.join(__dirname, '..', imgUrl);
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            console.log(`Deleted image: ${filePath}`);
-          }
+        if (imgUrl.startsWith('https://res.cloudinary.com/')) {
+          const publicId = imgUrl.split('/').pop().split('.')[0];
+          cloudinary.uploader.destroy(publicId);
+          console.log(`Deleted image: ${imgUrl}`);
         }
       });
     }

@@ -4,14 +4,15 @@
     "dev": "nodemon index.js"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0",
     "autoprefixer": "^10.4.20",
+    "nodemon": "^3.1.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.0.9"
   },
   "dependencies": {
     "axios": "^1.8.3",
     "bcrypt": "^5.1.1",
+    "cloudinary": "^1.41.3",
     "connect-mongo": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -21,6 +22,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.11.0",
     "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
   }

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { CartContext } from '../contexts/CartContext';
 import { toast } from 'react-hot-toast';
+import { isCloudinaryUrl, optimizeCloudinaryUrl, getPlaceholderImage } from '../utils/cloudinary';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
@@ -11,6 +12,17 @@ const ProductCard = ({ product }) => {
     e.stopPropagation();
     addToCart(product, 1);
     toast.success(`${product.title} added to cart!`);
+  };
+
+  // Get the optimized image URL
+  const getImageUrl = () => {
+    let imageUrl = product.imageUrls ? product.imageUrls[0] : product.imageUrl;
+    
+    if (!imageUrl) {
+      return getPlaceholderImage();
+    }
+    
+    return isCloudinaryUrl(imageUrl) ? optimizeCloudinaryUrl(imageUrl) : imageUrl;
   };
 
   return (
@@ -30,13 +42,13 @@ const ProductCard = ({ product }) => {
         )}
         
         {/* Product Image */}
-        <div className="h-48 sm:h-56 overflow-hidden bg-gray-50 flex items-center justify-center p-4">
+        <div className="h-60 bg-white overflow-hidden flex items-center justify-center p-4 border-b border-gray-100">
           <img 
-            src={product.imageUrls ? product.imageUrls[0] : product.imageUrl} 
+            src={getImageUrl()} 
             alt={product.title} 
-            className="w-full h-full object-contain transition-transform hover:scale-110"
+            className="max-h-52 w-auto object-contain transition-transform hover:scale-105"
             onError={(e) => {
-              e.target.src = '/images/placeholder.png';
+              e.target.src = getPlaceholderImage();
             }}
           />
         </div>

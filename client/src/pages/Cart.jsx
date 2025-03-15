@@ -1,15 +1,17 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import { CartContext } from '../contexts/CartContext';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
+import Loader from '../components/UI/Loader';
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal } = useContext(CartContext);
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(false);
   
   useEffect(() => {
     // Check if user is authenticated
@@ -31,6 +33,10 @@ const Cart = () => {
   const handleRemoveItem = (id) => {
     removeFromCart(id);
     toast.success('Item removed from cart');
+  };
+
+  const handleCheckout = () => {
+    navigate('/checkout');
   };
 
   if (cart.length === 0) {
@@ -134,14 +140,23 @@ const Cart = () => {
                 </div>
               </div>
             </div>
-            <button
-              className="mt-6 w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700"
-              onClick={() => {
-                navigate('/checkout');
-              }}
-            >
-              Checkout
-            </button>
+            <div className="mt-8">
+              <button
+                onClick={handleCheckout}
+                disabled={cart.length === 0 || isProcessing}
+                className={`w-full bg-blue-600 py-3 px-6 text-white font-medium rounded-md transition-colors
+                  ${cart.length === 0 || isProcessing ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+              >
+                {isProcessing ? (
+                  <div className="flex justify-center items-center">
+                    <Loader size={24} className="mr-2" />
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  'Proceed to Checkout'
+                )}
+              </button>
+            </div>
             <Link
               to="/products"
               className="mt-4 w-full block text-center text-blue-600 hover:text-blue-700"
