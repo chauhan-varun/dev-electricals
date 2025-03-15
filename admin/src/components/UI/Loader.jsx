@@ -10,7 +10,7 @@ const PRIMARY_COLOR = '#dc2626'; // Tailwind red-600
 const Loader = ({ size = 15, color = PRIMARY_COLOR, loading = true, className = '' }) => {
   return (
     <div className={`flex justify-center items-center ${className}`}>
-      <FadeLoader color={color} loading={loading} height={size} width={size/5} radius={2} margin={2} />
+      <FadeLoader color={color} loading={loading} height={15} width={3} radius={2} margin={2} />
     </div>
   );
 };
