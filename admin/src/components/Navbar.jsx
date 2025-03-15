@@ -8,11 +8,11 @@ const Navbar = () => {
   const location = useLocation();
 
   const navItems = [
-    { id: 'used-products', label: 'Used Products', path: '/used-products' },
     { id: 'services', label: 'Services', path: '/services' },
     { id: 'repairs', label: 'Repairs', path: '/repairs' },
     { id: 'orders', label: 'Orders', path: '/orders' },
-    { id: 'users', label: 'Users', path: '/users' }
+    { id: 'used-products', label: 'Used Products', path: '/used-products' },
+    { id: 'contact', label: 'Contact Messages', path: '/contact' }
   ];
 
   return (
@@ -49,7 +49,7 @@ const Navbar = () => {
                 key={item.id}
                 to={item.path}
                 className={`text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                  location.pathname === item.path || (item.path === '/used-products' && location.pathname === '/') 
+                  location.pathname === item.path || (item.path === '/services' && location.pathname === '/') 
                     ? 'bg-red-700' 
                     : 'hover:bg-red-700'
                 }`}
@@ -74,7 +74,7 @@ const Navbar = () => {
                 key={item.id}
                 to={item.path}
                 className={`block text-white px-3 py-2 rounded-md text-sm font-medium ${
-                  location.pathname === item.path || (item.path === '/used-products' && location.pathname === '/') 
+                  location.pathname === item.path || (item.path === '/services' && location.pathname === '/') 
                     ? 'bg-red-700' 
                     : 'hover:bg-red-700'
                 }`}

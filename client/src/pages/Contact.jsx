@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import AnimatedInput from '../components/AnimatedInput';
+import api from '../utils/axios';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -12,22 +13,27 @@ const Contact = () => {
   });
 
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
     try {
-      // TODO: Implement API call to send message
-      console.log('Form submitted:', formData);
+      const response = await api.post('/contact', formData);
       setSubmitStatus({
         type: 'success',
-        message: 'Message sent successfully! We will get back to you soon.'
+        message: response.data.message || 'Message sent successfully! We will get back to you soon.'
       });
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
+      console.error('Contact form error:', error);
       setSubmitStatus({
         type: 'error',
-        message: 'Failed to send message. Please try again.'
+        message: error.response?.data?.message || 'Failed to send message. Please try again.'
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -160,9 +166,10 @@ const Contact = () => {
             </div>
             <button
               type="submit"
-              className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition-colors"
+              disabled={isSubmitting}
+              className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition-colors disabled:opacity-70"
             >
-              Send Message
+              {isSubmitting ? 'Sending...' : 'Send Message'}
             </button>
           </form>
         </div>

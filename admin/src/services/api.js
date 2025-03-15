@@ -33,12 +33,39 @@ const fetchData = async (url, method = 'GET', body = null) => {
   }
 };
 
+// Helper function for FormData uploads (files)
+const uploadData = async (url, method = 'POST', formData) => {
+  try {
+    const options = {
+      method,
+      credentials: 'include', // Include credentials for CORS requests
+      body: formData, // No Content-Type header needed - browser sets it with boundary
+    };
+
+    console.log(`Making ${method} FormData upload request to: ${url}`);
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      console.error(`Upload failed with status ${response.status}: ${response.statusText}`);
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || `Upload failed with status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log(`Upload response data from ${url}:`, data);
+    return data;
+  } catch (error) {
+    console.error(`Error uploading to ${url}:`, error);
+    throw error;
+  }
+};
+
 export const fetchListings = async () => {
   return fetchData(`${API_BASE_URL}/listings`);
 };
 
 export const fetchServices = async () => {
-  return fetchData(`${API_BASE_URL}/services`);
+  return fetchData(`${API_BASE_URL}/services/bookings`);
 };
 
 export const fetchRepairs = async () => {
@@ -101,6 +128,11 @@ export const deleteRepair = async (repairId) => {
 // Delete a user
 export const deleteUser = async (userId) => {
   return fetchData(`${API_BASE_URL}/auth/users/${userId}`, 'DELETE');
+};
+
+// Delete a service booking
+export const deleteService = async (serviceId) => {
+  return fetchData(`${API_BASE_URL}/services/book/${serviceId}`, 'DELETE');
 };
 
 // Orders API
@@ -170,11 +202,56 @@ export const fetchUsedProducts = async () => {
 };
 
 export const approveUsedProduct = async (productId) => {
-  return fetchData(`${API_BASE_URL}/used-products/${productId}/approve`, 'PATCH');
+  try {
+    console.log(`Approving used product ${productId}`);
+    const response = await fetch(`${API_BASE_URL}/used-products/${productId}/approve`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error approving product:', errorText);
+      throw new Error(`Failed to approve product: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Approval response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in approveUsedProduct:', error);
+    throw error;
+  }
 };
 
-export const denyUsedProduct = async (productId) => {
-  return fetchData(`${API_BASE_URL}/used-products/${productId}/deny`, 'PATCH');
+export const denyUsedProduct = async (productId, notes = '') => {
+  try {
+    console.log(`Denying used product ${productId}`);
+    const response = await fetch(`${API_BASE_URL}/used-products/${productId}/deny`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ adminNotes: notes }),
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error denying product:', errorText);
+      throw new Error(`Failed to deny product: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Denial response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in denyUsedProduct:', error);
+    throw error;
+  }
 };
 
 // Products API
@@ -191,11 +268,19 @@ export const getProductById = async (productId) => {
 
 // Create a new product
 export const createProduct = async (productData) => {
+  // Check if productData is FormData (for file uploads)
+  if (productData instanceof FormData) {
+    return uploadData(`${API_BASE_URL}/products`, 'POST', productData);
+  }
   return fetchData(`${API_BASE_URL}/products`, 'POST', productData);
 };
 
 // Update a product
 export const updateProduct = async (productId, productData) => {
+  // Check if productData is FormData (for file uploads)
+  if (productData instanceof FormData) {
+    return uploadData(`${API_BASE_URL}/products/${productId}`, 'PUT', productData);
+  }
   return fetchData(`${API_BASE_URL}/products/${productId}`, 'PUT', productData);
 };
 

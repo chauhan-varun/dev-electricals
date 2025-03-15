@@ -23,10 +23,16 @@ const ProductCard = ({ product }) => {
           </span>
         )}
         
+        {product.isRefurbished && (
+          <span className="absolute top-2 left-2 z-10 bg-green-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">
+            Refurbished
+          </span>
+        )}
+        
         {/* Product Image */}
         <div className="h-48 sm:h-56 overflow-hidden bg-gray-50 flex items-center justify-center p-4">
           <img 
-            src={product.imageUrl} 
+            src={product.imageUrls ? product.imageUrls[0] : product.imageUrl} 
             alt={product.title} 
             className="w-full h-full object-contain transition-transform hover:scale-110"
             onError={(e) => {

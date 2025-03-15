@@ -14,8 +14,8 @@ export const services = [
   },
   {
     id: 2,
-    title: 'Industrial Electrical Setup',
-    description: 'Professional electrical solutions for factories, warehouses, and industrial facilities.',
+    title: 'Appliances Installation',
+    description: 'Professional appliance installation for all electricals. Safe, efficient, and hassle-free service by experts. Get your appliances up and running in no time!',
     price: 'From ₹1,499',
     features: [
       'High-voltage system installation',
@@ -75,6 +75,18 @@ export const repairs = [
       'Circuit breaker problems',
       'Voltage fluctuations',
       'Wiring repairs'
+    ]
+  },
+  {
+    id: 4,
+    category: 'Other',
+    description: 'Other electrical repairs and maintenance services not listed above.',
+    price: 'Price varies',
+    commonIssues: [
+      'Electrical device malfunctions',
+      'Specialized equipment repair',
+      'Custom electrical installations',
+      'Other electrical issues'
     ]
   }
 ]; 

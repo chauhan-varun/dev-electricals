@@ -54,7 +54,8 @@ const Services = () => {
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                to="/schedule-repair"
+                to="/schedule-service"
+                state={{ serviceType: service.title }}
                 className="mt-4 inline-block bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark"
               >
                 Schedule Service

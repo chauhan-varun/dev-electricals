@@ -13,13 +13,43 @@ router.get('/', async (req, res) => {
 
 // Schedule a repair
 router.post('/schedule', async (req, res) => {
-  const { name, contact, address, repairType, date, time } = req.body;
   try {
-    const newBooking = new RepairBooking({ name, contact, address, repairType, date, time });
+    console.log('Received repair booking request:', req.body);
+    const { name, contact, address, repairType, description, date, time } = req.body;
+    
+    // Validate required fields
+    if (!name || !contact || !address || !repairType || !description || !date || !time) {
+      return res.status(400).json({ 
+        message: 'Missing required fields',
+        missingFields: Object.entries({ name, contact, address, repairType, description, date, time })
+          .filter(([_, value]) => !value)
+          .map(([key]) => key)
+      });
+    }
+    
+    // Create new booking
+    const newBooking = new RepairBooking({
+      name,
+      contact,
+      address,
+      repairType,
+      description,
+      date: new Date(date),
+      time
+    });
+    
     await newBooking.save();
-    res.status(201).json({ message: 'Service scheduled successfully!', booking: newBooking });
+    
+    res.status(201).json({ 
+      message: 'Repair service scheduled successfully! We will get back to you soon.', 
+      booking: newBooking 
+    });
   } catch (error) {
-    res.status(400).json({ message: 'Error scheduling repair', error: error.message });
+    console.error('Error scheduling repair:', error);
+    res.status(400).json({ 
+      message: 'Error scheduling repair', 
+      error: error.message 
+    });
   }
 });
 

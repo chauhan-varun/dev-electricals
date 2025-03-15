@@ -5,6 +5,7 @@ const repairBookingSchema = new mongoose.Schema({
   contact: { type: String, required: true },
   address: { type: String, required: true },
   repairType: { type: String, required: true },
+  description: { type: String, required: true },
   date: { type: Date, required: true },
   time: { type: String, required: true },
   status: { type: String, enum: ['pending', 'in-progress', 'completed', 'cancelled'], default: 'pending' }

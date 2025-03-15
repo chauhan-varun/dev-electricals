@@ -21,7 +21,14 @@ const usedProductSchema = new mongoose.Schema({
   },
   images: [{
     type: String,
-    required: true
+    required: true,
+    get: function(value) {
+      // Handle relative paths by prepending server URL when needed
+      if (value && !value.startsWith('http')) {
+        return `${process.env.SERVER_URL || 'http://localhost:5000'}/${value}`;
+      }
+      return value;
+    }
   }],
   askingPrice: {
     type: Number,
@@ -57,6 +64,9 @@ const usedProductSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+}, {
+  toJSON: { getters: true }, // Enable getters when converting to JSON
+  toObject: { getters: true } // Enable getters when converting to objects
 });
 
 module.exports = mongoose.model('UsedProduct', usedProductSchema); 

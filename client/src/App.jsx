@@ -26,6 +26,7 @@ import SignUp from './pages/SignUp';
 import ProductDetails from './pages/ProductDetails';
 import ServiceBooking from './pages/ServiceBooking';
 import ScheduleRepair from './pages/ScheduleRepair';
+import ScheduleService from './pages/ScheduleService';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -139,6 +140,10 @@ const router = createBrowserRouter([
       {
         path: "schedule-repair",
         element: <ScheduleRepair />,
+      },
+      {
+        path: "schedule-service",
+        element: <ScheduleService />,
       },
     ],
   },

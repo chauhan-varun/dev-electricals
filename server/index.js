@@ -4,7 +4,17 @@ const cors = require('cors');
 const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const path = require('path');
 require('dotenv').config();
+
+// Set SERVER_URL if not defined
+if (!process.env.SERVER_URL) {
+  const PORT = process.env.PORT || 5000;
+  process.env.SERVER_URL = process.env.NODE_ENV === 'production' 
+    ? process.env.PRODUCTION_URL 
+    : `http://localhost:${PORT}`;
+  console.log(`SERVER_URL set to: ${process.env.SERVER_URL}`);
+}
 
 // Import passport configuration
 require('./config/passport');
@@ -62,6 +72,7 @@ app.use('/api', require('./routes/api')); // Add the new API routes
 app.use('/api/products', require('./routes/products'));
 app.use('/api/services', require('./routes/services'));
 app.use('/api/repairs', require('./routes/repairs'));
+app.use('/api/contact', require('./routes/contact')); // Add Contact routes
 app.use('/api/auth', cors(corsOptions), require('./routes/auth')); // Auth routes with CORS
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/sell', require('./routes/sell'));

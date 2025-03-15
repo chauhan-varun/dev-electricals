@@ -11,10 +11,16 @@ const storage = multer.diskStorage({
     if (!fs.existsSync('./uploads')) {
       fs.mkdirSync('./uploads');
     }
-    cb(null, './uploads/');
+    // Create dedicated directory for used product images
+    if (!fs.existsSync('./uploads/used-products')) {
+      fs.mkdirSync('./uploads/used-products');
+    }
+    cb(null, './uploads/used-products/');
   },
   filename: function(req, file, cb) {
-    cb(null, 'used-product-' + Date.now() + path.extname(file.originalname));
+    // Generate a unique filename with original extension
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'used-product-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
@@ -35,7 +41,7 @@ function checkFileType(file, cb) {
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb('Error: Images Only!');
+    cb(new Error('Error: Images Only!'));
   }
 }
 
@@ -47,18 +53,45 @@ router.get('/test', (req, res) => {
 // Submit used product listing
 router.post('/', upload.array('images', 5), async (req, res) => {
   try {
-    const images = req.files.map(file => file.path);
+    console.log('Received used product submission');
+    console.log('Files received:', req.files?.length || 0);
+    
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'At least one image is required' });
+    }
+    
+    // Process image paths for storage in the database
+    const images = req.files.map(file => file.path.replace(/\\/g, '/'));
+    
+    console.log('Processed image paths:', images);
+    console.log('Form data:', req.body);
     
     const usedProduct = new UsedProduct({
-      ...req.body,
-      images,
-      askingPrice: req.body.requestQuote ? undefined : Number(req.body.askingPrice)
+      title: req.body.title,
+      description: req.body.description,
+      category: req.body.category,
+      condition: req.body.condition,
+      images: images,
+      askingPrice: req.body.requestQuote === 'true' ? undefined : Number(req.body.askingPrice),
+      requestQuote: req.body.requestQuote === 'true',
+      seller: {
+        name: req.body['seller.name'],
+        email: req.body['seller.email'],
+        phone: req.body['seller.phone']
+      },
+      status: 'pending'
     });
 
-    await usedProduct.save();
-    res.status(201).json({ message: 'Product listing submitted successfully', product: usedProduct });
+    const savedProduct = await usedProduct.save();
+    console.log('Product saved:', savedProduct);
+    
+    res.status(201).json({ 
+      message: 'Product listing submitted successfully', 
+      product: savedProduct 
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error submitting used product:', error);
+    res.status(400).json({ message: error.message || 'Failed to submit product listing' });
   }
 });
 
@@ -68,8 +101,9 @@ router.get('/my-submissions/:email', async (req, res) => {
     const submissions = await UsedProduct.find({ 'seller.email': req.params.email });
     res.json(submissions);
   } catch (error) {
+    console.error('Error fetching user submissions:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-module.exports = router; 
+module.exports = router;

@@ -8,11 +8,16 @@ const UsedProductsManagement = () => {
   const [error, setError] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [denyReason, setDenyReason] = useState('');
+  const [showDenyModal, setShowDenyModal] = useState(false);
+  const [productToDeny, setProductToDeny] = useState(null);
+  const [processingAction, setProcessingAction] = useState(false);
 
   // Status colors for badges
   const statusColors = {
     'pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
     'approved': 'bg-green-100 text-green-800 border-green-200',
+    'rejected': 'bg-red-100 text-red-800 border-red-200',
     'denied': 'bg-red-100 text-red-800 border-red-200',
   };
 
@@ -37,40 +42,60 @@ const UsedProductsManagement = () => {
 
   const handleApprove = async (productId) => {
     try {
-      await approveUsedProduct(productId);
-      // Update local state
-      setUsedProducts(usedProducts.map(product => 
-        product._id === productId ? { ...product, status: 'approved' } : product
-      ));
+      setProcessingAction(true);
+      const response = await approveUsedProduct(productId);
+      console.log('Approval response:', response);
+      
+      // Remove the approved product from the list
+      setUsedProducts(usedProducts.filter(product => product._id !== productId));
       
       if (selectedProduct && selectedProduct._id === productId) {
-        setSelectedProduct({ ...selectedProduct, status: 'approved' });
+        setSelectedProduct(null);
       }
       
       toast.success('Product approved and added to refurbished items');
     } catch (err) {
       console.error('Error approving product:', err);
       toast.error('Failed to approve product');
+    } finally {
+      setProcessingAction(false);
     }
   };
 
-  const handleDeny = async (productId) => {
+  const handleDeny = async (productId, notes = '') => {
     try {
-      await denyUsedProduct(productId);
-      // Update local state
-      setUsedProducts(usedProducts.map(product => 
-        product._id === productId ? { ...product, status: 'denied' } : product
-      ));
+      setProcessingAction(true);
+      const response = await denyUsedProduct(productId, notes);
+      console.log('Denial response:', response);
+      
+      // Remove the denied product from the list
+      setUsedProducts(usedProducts.filter(product => product._id !== productId));
       
       if (selectedProduct && selectedProduct._id === productId) {
-        setSelectedProduct({ ...selectedProduct, status: 'denied' });
+        setSelectedProduct(null);
       }
       
-      toast.success('Product has been denied');
+      toast.success('Product has been denied and removed');
+      setDenyReason('');
+      setShowDenyModal(false);
+      setProductToDeny(null);
     } catch (err) {
       console.error('Error denying product:', err);
       toast.error('Failed to deny product');
+    } finally {
+      setProcessingAction(false);
     }
+  };
+
+  const handleDenyModalSubmit = () => {
+    if (!productToDeny) return;
+    handleDeny(productToDeny._id, denyReason);
+  };
+
+  const handleDenyModalCancel = () => {
+    setShowDenyModal(false);
+    setDenyReason('');
+    setProductToDeny(null);
   };
 
   const filteredProducts = statusFilter === 'all' 
@@ -101,6 +126,46 @@ const UsedProductsManagement = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Deny Confirmation Modal */}
+      {showDenyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Deny Used Product</h3>
+            <p className="mb-4">
+              Are you sure you want to deny this product? This will permanently remove it from the database.
+            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Reason for denial (optional):
+              </label>
+              <textarea
+                value={denyReason}
+                onChange={(e) => setDenyReason(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-2"
+                rows="3"
+                placeholder="Enter reason for denial (optional)"
+              ></textarea>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleDenyModalCancel}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                disabled={processingAction}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDenyModalSubmit}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                disabled={processingAction}
+              >
+                {processingAction ? 'Processing...' : 'Confirm Deny'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Used Products Management</h1>
         <div className="flex items-center space-x-2">
@@ -119,8 +184,9 @@ const UsedProductsManagement = () => {
           <button
             onClick={loadUsedProducts}
             className="bg-red-600 text-white px-4 py-1 rounded text-sm hover:bg-red-700"
+            disabled={loading}
           >
-            Refresh
+            {loading ? 'Loading...' : 'Refresh'}
           </button>
         </div>
       </div>
@@ -131,8 +197,9 @@ const UsedProductsManagement = () => {
           <button
             onClick={loadUsedProducts}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            disabled={loading}
           >
-            Refresh
+            {loading ? 'Loading...' : 'Refresh'}
           </button>
         </div>
       ) : (
@@ -158,7 +225,7 @@ const UsedProductsManagement = () => {
                       </div>
                       <div className="text-sm text-gray-500 mt-1">
                         {new Date(product.createdAt).toLocaleDateString()} • 
-                        ₹{product.price?.toFixed(2)}
+                        ₹{product.askingPrice?.toFixed(2) || 'Quote Requested'}
                       </div>
                     </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[product.status] || 'bg-gray-100'}`}>
@@ -186,14 +253,19 @@ const UsedProductsManagement = () => {
                       <button
                         onClick={() => handleApprove(selectedProduct._id)}
                         className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                        disabled={processingAction}
                       >
-                        Approve
+                        {processingAction ? 'Processing...' : 'Approve'}
                       </button>
                       <button
-                        onClick={() => handleDeny(selectedProduct._id)}
+                        onClick={() => {
+                          setProductToDeny(selectedProduct);
+                          setShowDenyModal(true);
+                        }}
                         className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                        disabled={processingAction}
                       >
-                        Deny
+                        {processingAction ? 'Processing...' : 'Deny'}
                       </button>
                     </div>
                   )}
@@ -210,11 +282,16 @@ const UsedProductsManagement = () => {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {selectedProduct.images && selectedProduct.images.length > 0 ? (
                       selectedProduct.images.map((image, index) => (
-                        <div key={index} className="relative aspect-square">
+                        <div key={index} className="relative aspect-square border border-gray-200 rounded-md overflow-hidden shadow-sm">
                           <img 
-                            src={image} 
+                            src={image.startsWith('http') ? image : `${import.meta.env.VITE_API_URL}/${image}`} 
                             alt={`${selectedProduct.title} - image ${index + 1}`}
                             className="w-full h-full object-cover rounded-md"
+                            onError={(e) => {
+                              console.error(`Error loading image: ${image}`);
+                              e.target.src = '/placeholder-image.jpg';
+                              e.target.classList.add('opacity-50');
+                            }}
                           />
                         </div>
                       ))
@@ -231,28 +308,24 @@ const UsedProductsManagement = () => {
                   <h3 className="text-lg font-semibold mb-2">Product Details</h3>
                   <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                     <div>
-                      <p className="text-sm text-gray-500">Original Price</p>
-                      <p className="font-medium">₹{selectedProduct.originalPrice?.toFixed(2)}</p>
-                    </div>
-                    <div>
                       <p className="text-sm text-gray-500">Asking Price</p>
-                      <p className="font-medium">₹{selectedProduct.price?.toFixed(2)}</p>
+                      <p className="font-medium">
+                        {selectedProduct.requestQuote 
+                          ? 'Quote Requested' 
+                          : `₹${selectedProduct.askingPrice?.toFixed(2) || '0.00'}`}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Category</p>
-                      <p className="font-medium">{selectedProduct.category}</p>
+                      <p className="font-medium">{selectedProduct.category || 'Not specified'}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Condition</p>
-                      <p className="font-medium">{selectedProduct.condition}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Age</p>
-                      <p className="font-medium">{selectedProduct.age} {selectedProduct.ageUnit}</p>
+                      <p className="font-medium">{selectedProduct.condition || 'Not specified'}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Brand</p>
-                      <p className="font-medium">{selectedProduct.brand}</p>
+                      <p className="font-medium">{selectedProduct.brand || 'Not specified'}</p>
                     </div>
                   </div>
                 </div>
@@ -264,19 +337,15 @@ const UsedProductsManagement = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-gray-500">Name</p>
-                        <p className="font-medium">{selectedProduct.seller?.name}</p>
+                        <p className="font-medium">{selectedProduct.seller?.name || 'Not provided'}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Email</p>
-                        <p className="font-medium">{selectedProduct.seller?.email}</p>
+                        <p className="font-medium">{selectedProduct.seller?.email || 'Not provided'}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Phone</p>
-                        <p className="font-medium">{selectedProduct.seller?.phone}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Location</p>
-                        <p className="font-medium">{selectedProduct.seller?.location}</p>
+                        <p className="font-medium">{selectedProduct.seller?.phone || 'Not provided'}</p>
                       </div>
                     </div>
                   </div>
@@ -286,7 +355,7 @@ const UsedProductsManagement = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Description</h3>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="whitespace-pre-line">{selectedProduct.description}</p>
+                    <p className="whitespace-pre-line">{selectedProduct.description || 'No description provided'}</p>
                   </div>
                 </div>
               </div>

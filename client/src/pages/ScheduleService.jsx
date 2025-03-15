@@ -1,37 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../utils/axios';
-import { repairs } from '../data/services';
+import { services } from '../data/services';
 
-const ScheduleRepair = () => {
+const ScheduleService = () => {
   const location = useLocation();
   const [formData, setFormData] = useState({
     name: '',
     contact: '',
     address: '',
-    repairType: '',
-    description: '',
+    serviceType: '',
     date: '',
     time: '',
   });
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
   const [showModal, setShowModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Check if a repair type was passed in the location state
+  // Check if a service type was passed in the location state
   useEffect(() => {
-    if (location.state) {
-      const newFormData = { ...formData };
-      
-      if (location.state.repairType) {
-        newFormData.repairType = location.state.repairType;
-      }
-      
-      if (location.state.description) {
-        newFormData.description = location.state.description;
-      }
-      
-      setFormData(newFormData);
+    if (location.state && location.state.serviceType) {
+      setFormData(prev => ({
+        ...prev,
+        serviceType: location.state.serviceType
+      }));
     }
   }, [location]);
 
@@ -45,38 +36,25 @@ const ScheduleRepair = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
     try {
-      // Add console log to debug the data being sent
-      console.log('Submitting repair booking with data:', formData);
-      
-      const response = await api.post('/repairs/schedule', formData);
-      console.log('Repair booking response:', response.data);
-      
+      const response = await api.post('/services/book', formData);
       setSubmitStatus({ type: 'success', message: response.data.message });
       setShowModal(true);
-      
       // Reset form after successful submission
       setFormData({
         name: '',
         contact: '',
         address: '',
-        repairType: '',
-        description: '',
+        serviceType: '',
         date: '',
         time: '',
       });
     } catch (error) {
-      console.error('Error scheduling repair:', error);
-      
       setSubmitStatus({
         type: 'error',
-        message: error.response?.data?.message || 'An error occurred while scheduling the repair. Please try again.'
+        message: error.response?.data?.message || 'An error occurred while scheduling the service. Please try again.'
       });
       setShowModal(true);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -85,7 +63,7 @@ const ScheduleRepair = () => {
 
   return (
     <div className="max-w-md mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Schedule a Repair</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Schedule a Service</h1>
       
       {/* Modal Popup */}
       {showModal && (
@@ -142,33 +120,21 @@ const ScheduleRepair = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Repair Type</label>
+          <label className="block text-sm font-medium text-gray-700">Service Type</label>
           <select
-            name="repairType"
-            value={formData.repairType}
+            name="serviceType"
+            value={formData.serviceType}
             onChange={handleChange}
             required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
           >
-            <option value="">Select a repair type</option>
-            {repairs.map((repair) => (
-              <option key={repair.id} value={repair.category}>
-                {repair.category}
+            <option value="">Select a service</option>
+            {services.map((service) => (
+              <option key={service.id} value={service.title}>
+                {service.title}
               </option>
             ))}
           </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            rows="4"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-            placeholder="Please describe the issue you're experiencing..."
-          ></textarea>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Date</label>
@@ -199,14 +165,13 @@ const ScheduleRepair = () => {
         </div>
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition-colors mt-4 disabled:opacity-50"
+          className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition-colors mt-4"
         >
-          {isSubmitting ? 'Scheduling...' : 'Schedule Repair'}
+          Schedule Service
         </button>
       </form>
     </div>
   );
 };
 
-export default ScheduleRepair;
+export default ScheduleService;

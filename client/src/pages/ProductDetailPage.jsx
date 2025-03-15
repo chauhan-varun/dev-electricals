@@ -94,7 +94,7 @@ const ProductDetailPage = () => {
           <div className="w-full md:w-1/2 bg-gray-50">
             <div className="h-[300px] sm:h-[400px] md:h-[500px] flex items-center justify-center p-4">
               <img 
-                src={product.imageUrl} 
+                src={product.imageUrls ? product.imageUrls[0] : product.imageUrl} 
                 alt={product.title} 
                 className="max-w-full max-h-full object-contain"
                 onError={(e) => {
@@ -108,11 +108,19 @@ const ProductDetailPage = () => {
           <div className="w-full md:w-1/2 p-5 sm:p-8">            
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">{product.title}</h1>
             
-            {product.featured && (
-              <span className="inline-block bg-blue-500 text-white text-xs px-2 py-1 rounded-full mb-4">
-                Featured
-              </span>
-            )}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {product.featured && (
+                <span className="inline-block bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                  Featured
+                </span>
+              )}
+              
+              {product.isRefurbished && (
+                <span className="inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                  Refurbished
+                </span>
+              )}
+            </div>
             
             <p className="text-xl sm:text-2xl font-bold text-blue-600 mb-4 sm:mb-6">₹{product.price.toFixed(2)}</p>
             
@@ -133,6 +141,20 @@ const ProductDetailPage = () => {
                   {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
                 </p>
               </div>
+
+              {product.isRefurbished && product.condition && (
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-md">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-1">Condition</h3>
+                  <p className="text-sm sm:text-base text-gray-600">{product.condition}</p>
+                </div>
+              )}
+
+              {product.brand && (
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-md">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-1">Brand</h3>
+                  <p className="text-sm sm:text-base text-gray-600">{product.brand}</p>
+                </div>
+              )}
             </div>
             
             {product.stock > 0 && (

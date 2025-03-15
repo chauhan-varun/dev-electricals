@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchListings, fetchServices, fetchRepairs, fetchUsers, updateListingStatus, updateRepairStatus, deleteRepair, deleteUser } from '../services/api';
+import { fetchListings, fetchServices, fetchRepairs, fetchUsers, updateListingStatus, updateRepairStatus, deleteRepair, deleteUser, deleteService } from '../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
@@ -119,6 +119,9 @@ const Dashboard = ({ view }) => {
       } else if (itemTypeToDelete === 'user') {
         await deleteUser(itemToDelete);
         toast.success('User deleted successfully');
+      } else if (itemTypeToDelete === 'service') {
+        await deleteService(itemToDelete);
+        toast.success('Service booking deleted successfully');
       }
       
       // Refresh the data after deletion
@@ -262,6 +265,36 @@ const Dashboard = ({ view }) => {
                           className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
                         >
                           Delete User
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  {activeTab === 'services' && (
+                    <>
+                      <div className="border-t border-gray-100 pt-3 space-y-2 mb-3">
+                        <p className="text-sm text-gray-700"><span className="font-medium">Contact:</span> {item.contact}</p>
+                        <p className="text-sm text-gray-700"><span className="font-medium">Address:</span> {item.address}</p>
+                        <p className="text-sm text-gray-700 capitalize"><span className="font-medium">Service Type:</span> {item.serviceType}</p>
+                        <div className="bg-gray-50 p-2 rounded-md mt-2">
+                          <p className="text-sm text-gray-700">
+                            <span className="font-medium">Date:</span> {' '}
+                            {new Date(item.date).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            <span className="font-medium">Time:</span> {item.time}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <button 
+                          onClick={() => handleDeleteClick(item._id, 'service')}
+                          className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                        >
+                          Delete Service Booking
                         </button>
                       </div>
                     </>

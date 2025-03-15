@@ -4,9 +4,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Dashboard from './components/Dashboard'
 import Navbar from './components/Navbar'
 import Login from './components/Login'
-import UserManagement from './components/UserManagement'
 import OrderManagement from './components/OrderManagement'
 import UsedProductsManagement from './components/UsedProductsManagement'
+import ContactManagement from './components/ContactManagement'
 
 function App() {
   const { isAuthenticated, loading } = useAuth()
@@ -30,11 +30,11 @@ function App() {
         <Routes>
           <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
           <Route path="/" element={isAuthenticated ? <Dashboard view="services" /> : <Navigate to="/login" />} />
-          <Route path="/used-products" element={isAuthenticated ? <UsedProductsManagement /> : <Navigate to="/login" />} />
           <Route path="/services" element={isAuthenticated ? <Dashboard view="services" /> : <Navigate to="/login" />} />
           <Route path="/repairs" element={isAuthenticated ? <Dashboard view="repairs" /> : <Navigate to="/login" />} />
           <Route path="/orders" element={isAuthenticated ? <OrderManagement /> : <Navigate to="/login" />} />
-          <Route path="/users" element={isAuthenticated ? <UserManagement /> : <Navigate to="/login" />} />
+          <Route path="/used-products" element={isAuthenticated ? <UsedProductsManagement /> : <Navigate to="/login" />} />
+          <Route path="/contact" element={isAuthenticated ? <ContactManagement /> : <Navigate to="/login" />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
