@@ -6,6 +6,7 @@ import { CartContext } from '../contexts/CartContext';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import Loader from '../components/UI/Loader';
+import { isCloudinaryUrl, optimizeCloudinaryUrl, getPlaceholderImage } from '../utils/cloudinary';
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal } = useContext(CartContext);
@@ -68,11 +69,16 @@ const Cart = () => {
               {cart.map((item) => (
                 <li key={item._id} className="p-6">
                   <div className="flex items-center">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      className="w-24 h-24 object-contain rounded"
-                    />
+                    <div className="w-24 h-24 bg-white border border-gray-200 rounded flex items-center justify-center overflow-hidden">
+                      <img
+                        src={isCloudinaryUrl(item.imageUrl) ? optimizeCloudinaryUrl(item.imageUrl, { width: 120, height: 120 }) : item.imageUrl || getPlaceholderImage()}
+                        alt={item.title}
+                        className="max-h-20 max-w-20 object-contain"
+                        onError={(e) => {
+                          e.target.src = getPlaceholderImage();
+                        }}
+                      />
+                    </div>
                     <div className="ml-6 flex-1">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>

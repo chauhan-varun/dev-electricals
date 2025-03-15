@@ -14,5 +14,15 @@ export default defineConfig({
       },
     }, 
   },
+  build: {
+    chunkSizeWarningLimit: 1000, // Increase chunk size warning limit (in kB)
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@heroicons/react', 'framer-motion', 'react-spinners'],
+        },
+      },
+    },
+  },
 })
-

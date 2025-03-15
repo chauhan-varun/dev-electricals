@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authApi } from '../utils/axios';
 import { useAuth } from '../contexts/AuthContext';
+import Loader from '../components/UI/Loader';
 
 const GoogleAuthCallback = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isProcessing, setIsProcessing] = useState(true);
   const [hasShownToast, setHasShownToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     // Clear any existing toasts to prevent duplicates
@@ -73,46 +75,44 @@ const GoogleAuthCallback = () => {
           setHasShownToast(true);
         }
         setIsProcessing(false);
-        navigate('/signin');
+        setErrorMessage(error.response?.data?.message || 'Error with Google authentication');
       }
     };
     
     processGoogleToken();
   }, [navigate, login, hasShownToast]);
   
-  // Show a prettier loading state that matches the image
+  // Render loading state while processing or fallback message on error  
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <div className="relative w-24 h-24">
-        <div className="absolute top-0 left-0 right-0 bottom-0">
-          {[...Array(12)].map((_, i) => (
-            <div 
-              key={i}
-              className="absolute w-2 h-6 bg-gray-400 rounded-full transform -translate-x-1/2"
-              style={{
-                left: '50%',
-                top: '0',
-                transformOrigin: '1px 24px',
-                animation: `spinLoader 1.2s linear infinite`,
-                animationDelay: `${-0.1 * i}s`,
-                opacity: 1 - (i * 0.075),
-                rotate: `${i * 30}deg`
-              }}
-            />
-          ))}
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 text-center">
+        {isProcessing ? (
+          <>
+            <div className="flex flex-col items-center justify-center">
+              <Loader size={60} />
+              <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">
+                Processing your login
+              </h2>
+              <p className="mt-2 text-center text-sm text-gray-600">
+                Please wait while we authenticate your account...
+              </p>
+            </div>
+          </>
+        ) : errorMessage ? (
+          <>
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <strong className="font-bold">Authentication failed:</strong>
+              <span className="block sm:inline"> {errorMessage}</span>
+            </div>
+            <button
+              onClick={() => navigate('/signin')}
+              className="mt-4 group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Return to Sign In
+            </button>
+          </>
+        ) : null}
       </div>
-      <p className="mt-6 text-lg font-medium text-gray-700">
-        {isProcessing ? 'Processing your sign-in...' : 'Sign-in successful!'}
-      </p>
-      
-      {/* Add animation keyframes */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes spinLoader {
-          0% { opacity: 0.25; }
-          100% { opacity: 1; }
-        }
-      `}} />
     </div>
   );
 };
