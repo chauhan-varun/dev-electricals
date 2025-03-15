@@ -25,8 +25,8 @@ const app = express();
 // Specific CORS configuration to fix preflight and credential issues
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.CLIENT_URL]
-    : ['http://localhost:5173', process.env.ADMIN_URL, 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'],
+    ? [process.env.CLIENT_URL, process.env.ADMIN_URL]
+    : [process.env.CLIENT_URL || 'http://localhost:5173', process.env.ADMIN_URL || 'http://localhost:5174'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-auth-token'],
