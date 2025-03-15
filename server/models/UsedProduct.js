@@ -17,7 +17,7 @@ const usedProductSchema = new mongoose.Schema({
   condition: {
     type: String,
     required: true,
-    enum: ['Like New', 'Good', 'Fair', 'Poor']
+    enum: ['New', 'Excellent', 'Good', 'Fair']
   },
   images: [{
     type: String,

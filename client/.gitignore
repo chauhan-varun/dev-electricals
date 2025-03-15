@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
-.env
+
 client_secret_326369018445-j2dnmhig3a7thp1s83n0u93r7sgp3h7k.apps.googleusercontent.com.json
 # Editor directories and files
 .vscode/*

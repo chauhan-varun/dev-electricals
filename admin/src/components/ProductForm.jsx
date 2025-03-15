@@ -333,6 +333,7 @@ const ProductForm = ({ product = null, onSave, onCancel }) => {
               className={`mt-1 block w-full rounded-md border ${errors.condition ? 'border-red-500' : 'border-gray-300'} shadow-sm p-2`}
             >
               <option value="">Select Condition</option>
+              <option value="New">New</option>
               <option value="Excellent">Excellent</option>
               <option value="Good">Good</option>
               <option value="Fair">Fair</option>

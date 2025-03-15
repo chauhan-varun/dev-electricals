@@ -40,11 +40,9 @@ const Sell = () => {
   // Condition options for product
   const conditions = [
     'New',
-    'Like New',
     'Excellent',
     'Good',
-    'Fair',
-    'For Parts'
+    'Fair'
   ];
 
   // Handle input change for form fields
