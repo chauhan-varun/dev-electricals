@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Base API client for regular API endpoints
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`,
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Auth API client for authentication endpoints
 const authApi = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth`,
+  baseURL: `${import.meta.env.VITE_API_URL}/api/auth`,
   headers: {
     'Content-Type': 'application/json',
   },
