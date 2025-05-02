@@ -119,6 +119,14 @@ router.post('/signin', async (req, res) => {
   }
 });
 
+// Google OAuth callback route
+router.get('/google/callback', (req, res) => {
+  // This route is hit by the browser after Google authentication
+  // It should only be accessed via redirect from Google
+  // We'll redirect to the front-end which will extract the token from the URL hash
+  res.redirect(`${process.env.CLIENT_URL || ''}/#${req.url.substring(req.url.indexOf('?'))}`);
+});
+
 // Google Authentication - works with both Google One Tap and OAuth2 tokens
 router.post('/google', async (req, res) => {
   const { token } = req.body;
