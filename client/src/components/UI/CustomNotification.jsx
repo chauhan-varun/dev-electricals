@@ -49,6 +49,7 @@ const CustomNotification = ({ type = 'success', message, duration = 4000, onClos
   const colorScheme = colors[type] || colors.info;
 
   return (
+    <div className="fixed inset-0 flex items-start justify-center z-[9999] pointer-events-none">
     <AnimatePresence>
       {isVisible && (
         <motion.div
@@ -56,7 +57,7 @@ const CustomNotification = ({ type = 'success', message, duration = 4000, onClos
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className={`fixed top-5 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full shadow-lg rounded-lg overflow-hidden ${colorScheme.background} border ${colorScheme.border}`}
+          className={`mt-5 max-w-md w-[90%] pointer-events-auto shadow-lg rounded-lg overflow-hidden ${colorScheme.background} border ${colorScheme.border}`}
         >
           <div className="p-4 flex items-start">
             <div className="flex-shrink-0">
@@ -88,6 +89,7 @@ const CustomNotification = ({ type = 'success', message, duration = 4000, onClos
         </motion.div>
       )}
     </AnimatePresence>
+  </div>
   );
 };
 
