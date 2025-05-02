@@ -1,20 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { authApi } from '../utils/axios';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import Loader from '../components/UI/Loader';
 
 const GoogleAuthCallback = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [isProcessing, setIsProcessing] = useState(true);
-  const [hasShownToast, setHasShownToast] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  // Use refs instead of state to prevent re-renders
+  const hasShownSuccessRef = useRef(false);
+  const hasShownErrorRef = useRef(false);
 
   useEffect(() => {
-    // Clear any existing toasts to prevent duplicates
-    toast.dismiss();
+    // Process the Google authentication
     
     const processGoogleToken = async () => {
       try {
@@ -23,19 +25,18 @@ const GoogleAuthCallback = () => {
         const accessToken = hashParams.get('access_token');
         
         if (!accessToken) {
-          if (!hasShownToast) {
-            toast.error('Authentication failed. Please try again.', {
-              position: 'top-center',
-              duration: 4000,
-              style: { background: '#EF4444', color: 'white' }
-            });
-            setHasShownToast(true);
+          if (!hasShownErrorRef.current) {
+            showError('Authentication failed. No token received from Google.', 5000);
+            hasShownErrorRef.current = true;
           }
           navigate('/signin');
           return;
         }
         
+        console.log('Got access token from Google, sending to backend...');
+        
         // Process the token with the backend
+        setIsProcessing(true);
         const response = await authApi.post('/google', { token: accessToken });
         
         // Extract user data
@@ -48,13 +49,9 @@ const GoogleAuthCallback = () => {
         login(user);
         
         // Show personalized welcome message with user's name only once
-        if (!hasShownToast) {
-          toast.success(`Welcome, ${user.name}!`, {
-            position: 'top-center',
-            duration: 4000,
-            style: { background: '#10B981', color: 'white' }
-          });
-          setHasShownToast(true);
+        if (!hasShownSuccessRef.current) {
+          showSuccess(`Welcome, ${user.name}!`, 5000);
+          hasShownSuccessRef.current = true;
         }
         
         // Allow the loading spinner to show before redirecting
@@ -66,21 +63,52 @@ const GoogleAuthCallback = () => {
         
       } catch (error) {
         console.error('Error processing Google token:', error);
-        if (!hasShownToast) {
-          toast.error(error.response?.data?.message || 'Error with Google authentication', {
-            position: 'top-center',
-            duration: 4000,
-            style: { background: '#EF4444', color: 'white' }
+        // Clear any stored token and logout
+        localStorage.removeItem('token');
+        
+        // Extract the most useful error message
+        let errorMessage = 'Error with Google authentication';
+        
+        if (error.response) {
+          console.error('Server response error:', {
+            status: error.response.status,
+            data: error.response.data
           });
-          setHasShownToast(true);
+          errorMessage = error.response.data?.message || errorMessage;
+        } else if (error.request) {
+          console.error('No response received from server');
+          errorMessage = 'Server is not responding. Please try again later.';
+        } else {
+          console.error('Error setting up request:', error.message);
+          errorMessage = 'Failed to send authentication request. Please try again.';
         }
+        
+        if (!hasShownErrorRef.current) {
+          showError(errorMessage, 6000);
+          hasShownErrorRef.current = true;
+        }
+        
         setIsProcessing(false);
-        setErrorMessage(error.response?.data?.message || 'Error with Google authentication');
+        setErrorMessage(errorMessage);
+        
+        // Redirect to signin page after a brief delay to allow the error message to be seen
+        setTimeout(() => {
+          navigate('/signin');
+        }, 5000);
       }
     };
     
     processGoogleToken();
-  }, [navigate, login, hasShownToast]);
+  }, [navigate, login]);
+  
+  // Add cleanup function to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      // Reset refs when component unmounts
+      hasShownSuccessRef.current = false;
+      hasShownErrorRef.current = false;
+    };
+  }, []);
   
   // Render loading state while processing or fallback message on error  
   return (

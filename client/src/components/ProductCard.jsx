@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { CartContext } from '../contexts/CartContext';
-import { toast } from 'react-hot-toast';
+import { useNotification } from '../contexts/NotificationContext';
 import { isCloudinaryUrl, optimizeCloudinaryUrl, getPlaceholderImage } from '../utils/cloudinary';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
+  const { showSuccess } = useNotification();
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product, 1);
-    toast.success(`${product.title} added to cart!`);
+    showSuccess(`${product.title} added to cart!`);
   };
 
   // Get the optimized image URL

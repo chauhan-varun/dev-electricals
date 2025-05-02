@@ -4,7 +4,7 @@ import { Bars3Icon, XMarkIcon, ShoppingCartIcon, UserIcon } from '@heroicons/rea
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { CartContext } from '../contexts/CartContext';
-import toast from 'react-hot-toast';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +12,7 @@ const Navbar = () => {
   const { itemCount } = useContext(CartContext);
   const navigate = useNavigate();
   const { currentUser, isAuthenticated, logout } = useAuth();
+  const { showError } = useNotification();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,17 +32,14 @@ const Navbar = () => {
 
   const handleSignOut = () => {
     logout();
+    showSuccess('Successfully logged out', 4000);
     navigate('/signin');
   };
   
   const handleCartClick = (e) => {
     if (!isAuthenticated) {
       e.preventDefault();
-      toast.error('Please sign in to view your cart', {
-        position: 'top-center',
-        duration: 4000,
-        style: { background: '#EF4444', color: 'white' }
-      });
+      showError('Please sign in to view your cart', 4000);
       navigate('/signin');
     }
   };

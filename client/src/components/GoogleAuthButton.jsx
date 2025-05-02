@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { useNotification } from '../contexts/NotificationContext';
 import { authApi } from '../utils/axios';
 import Loader from '../components/UI/Loader';
 
@@ -10,6 +10,7 @@ const USE_SIMULATION = false;
 const GoogleAuthButton = ({ buttonText = "Sign in with Google", onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
 
   // Direct Google OAuth flow without relying on Google Identity Services
   const handleGoogleLogin = async (e) => {
@@ -22,11 +23,7 @@ const GoogleAuthButton = ({ buttonText = "Sign in with Google", onSuccess }) => 
       // For simulation mode only in development
       if (USE_SIMULATION && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         // Simulate a successful login in development
-        toast.success('Simulated Google sign-in success in development mode', {
-          position: 'top-center',
-          duration: 4000,
-          style: { background: '#10B981', color: 'white' }
-        });
+        showSuccess('Simulated Google sign-in success in development mode', 4000);
         
         // Create a mock user
         const mockUser = {
@@ -63,11 +60,7 @@ const GoogleAuthButton = ({ buttonText = "Sign in with Google", onSuccess }) => 
       
     } catch (error) {
       console.error('Google auth error:', error);
-      toast.error('Error with Google sign-in. Please try again.', {
-        position: 'top-center',
-        duration: 4000,
-        style: { background: '#EF4444', color: 'white' }
-      });
+      showError('Error with Google sign-in. Please try again.', 4000);
       setIsLoading(false);
     }
   };

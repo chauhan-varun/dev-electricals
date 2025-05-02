@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { toast } from 'react-hot-toast';
+import { useNotification } from '../contexts/NotificationContext';
 import { createOrder } from '../services/api';
 import Loader from '../components/UI/Loader';
 
@@ -10,6 +10,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { cart, cartTotal, clearCart } = useContext(CartContext);
   const { currentUser } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: currentUser?.displayName || '',
@@ -33,7 +34,7 @@ const Checkout = () => {
     e.preventDefault();
     
     if (cart.length === 0) {
-      toast.error('Your cart is empty');
+      showError('Your cart is empty');
       return;
     }
     
@@ -74,14 +75,14 @@ const Checkout = () => {
       
       if (response && response._id) {
         clearCart();
-        toast.success('Order placed successfully!');
+        showSuccess('Order placed successfully!');
         navigate('/order-confirmation', { state: { order: response } });
       } else {
         throw new Error('Failed to create order');
       }
     } catch (error) {
       console.error('Error placing order:', error);
-      toast.error(error.message || 'Failed to place order. Please try again.');
+      showError(error.message || 'Failed to place order. Please try again.');
     } finally {
       setLoading(false);
     }

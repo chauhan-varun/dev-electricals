@@ -2,7 +2,7 @@ import { useState } from 'react';
 import api, { authApi } from '../utils/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import GoogleAuthButton from '../components/GoogleAuthButton';
-import toast from 'react-hot-toast';
+import { useNotification } from '../contexts/NotificationContext';
 import { useAuth } from '../contexts/AuthContext';
 
 const SignIn = () => {
@@ -14,6 +14,7 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showSuccess, showError } = useNotification();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,8 +28,7 @@ const SignIn = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Clear any existing toasts
-    toast.dismiss();
+    // Begin sign in process
     
     try {
       console.log('Attempting to sign in with:', { email: formData.email });
@@ -48,11 +48,7 @@ const SignIn = () => {
       login(response.data.user);
       
       // Show personalized welcome message
-      toast.success(`Welcome back, ${response.data.user.name}!`, {
-        position: 'top-center',
-        duration: 4000,
-        style: { background: '#10B981', color: 'white' }
-      });
+      showSuccess(`Welcome back, ${response.data.user.name}!`, 4000);
       
       // Navigate to home page
       navigate('/');
@@ -61,11 +57,7 @@ const SignIn = () => {
       
       // Use the standard error message for authentication failures
       // This follows the memory specification for security (not revealing specific failure)
-      toast.error('Incorrect credentials', {
-        position: 'top-center',
-        duration: 4000,
-        style: { background: '#EF4444', color: 'white' }
-      });
+      showError('Incorrect credentials', 4000);
     } finally {
       setIsLoading(false);
     }

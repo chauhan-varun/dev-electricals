@@ -1,6 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { getCurrentUser, logout } from '../utils/auth';
-import toast from 'react-hot-toast';
 
 // Create context
 const AuthContext = createContext();
@@ -30,11 +29,7 @@ export const AuthProvider = ({ children }) => {
   const handleLogout = () => {
     logout();
     setCurrentUser(null);
-    toast.success('Successfully logged out', {
-      position: 'top-center',
-      duration: 4000,
-      style: { background: '#10B981', color: 'white' }
-    });
+    // Notification will be handled by the component that calls this
     // Navigation will be handled by the component that calls this method
   };
 

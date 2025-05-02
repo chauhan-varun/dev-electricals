@@ -5,7 +5,7 @@ import {
   useLocation
 } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Toaster } from 'react-hot-toast';
+import { NotificationProvider } from './contexts/NotificationContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import Navbar from './components/Navbar';
@@ -164,17 +164,9 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Toaster 
-          position="top-center"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              background: '#333',
-              color: '#fff',
-            },
-          }}
-        />
-        <RouterProvider router={router} />
+        <NotificationProvider>
+          <RouterProvider router={router} />
+        </NotificationProvider>
       </CartProvider>
     </AuthProvider>
   );

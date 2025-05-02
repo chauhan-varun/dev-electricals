@@ -4,7 +4,7 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import { CartContext } from '../contexts/CartContext';
 import { useEffect } from 'react';
-import toast from 'react-hot-toast';
+import { useNotification } from '../contexts/NotificationContext';
 import Loader from '../components/UI/Loader';
 import { isCloudinaryUrl, optimizeCloudinaryUrl, getPlaceholderImage } from '../utils/cloudinary';
 
@@ -13,15 +13,12 @@ const Cart = () => {
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const { showSuccess, showError } = useNotification();
   
   useEffect(() => {
     // Check if user is authenticated
     if (!isAuthenticated) {
-      toast.error('Please sign in to view your cart', {
-        position: 'top-center',
-        duration: 3000,
-        style: { background: '#333', color: '#fff' }
-      });
+      showError('Please sign in to view your cart', 3000);
       navigate('/signin');
     }
   }, [isAuthenticated, navigate]);
@@ -33,7 +30,7 @@ const Cart = () => {
 
   const handleRemoveItem = (id) => {
     removeFromCart(id);
-    toast.success('Item removed from cart');
+    showSuccess('Item removed from cart');
   };
 
   const handleCheckout = () => {

@@ -124,10 +124,17 @@ router.post('/google', async (req, res) => {
   const { token } = req.body;
   
   try {
+    // Check if token is provided
+    if (!token) {
+      console.error('No token provided in request');
+      return res.status(400).json({ message: 'Authentication token is required' });
+    }
+    
     let userData;
     
     // Handle development mode with mock token
     if (isDevelopment && token === 'mock-token-for-development') {
+      console.log('Using mock token for development');
       userData = {
         sub: 'google-user-123',
         email: 'test@example.com',
@@ -135,56 +142,93 @@ router.post('/google', async (req, res) => {
         picture: 'https://ui-avatars.com/api/?name=Test+User&background=0D8ABC&color=fff'
       };
     } else {
+      console.log('Attempting to verify Google token...');
+      
       // Try to verify as ID token first (Google One Tap)
       try {
+        console.log('Trying as ID token...');
         const ticket = await googleClient.verifyIdToken({
           idToken: token,
           audience: process.env.GOOGLE_CLIENT_ID
         });
         userData = ticket.getPayload();
+        console.log('Successfully verified as ID token');
       } catch (error) {
+        console.log('ID token verification failed, trying as access token:', error.message);
+        
         // If not an ID token, try as access token (OAuth2)
         try {
+          console.log('Trying as access token...');
           const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
             headers: { Authorization: `Bearer ${token}` }
           });
           userData = response.data;
+          console.log('Successfully verified as access token');
         } catch (tokenError) {
-          console.error('Failed to verify token:', tokenError);
-          return res.status(401).json({ message: 'Invalid token' });
+          console.error('Failed to verify token as either ID or access token:', tokenError.message);
+          return res.status(401).json({ message: 'Invalid authentication token' });
         }
       }
     }
     
-    // Extract user data
-    const { sub: googleId, email, name, picture: profilePicture } = userData;
+    // Log user data for debugging
+    console.log('Extracted user data:', {
+      sub: userData.sub,
+      email: userData.email,
+      name: userData.name,
+      hasPicture: !!userData.picture
+    });
+    
+    // Extract user data (with validation)
+    if (!userData.sub || !userData.email) {
+      console.error('Invalid user data received from Google:', userData);
+      return res.status(400).json({ message: 'Invalid user data received from Google' });
+    }
+    
+    const googleId = userData.sub;
+    const email = userData.email;
+    const name = userData.name || email.split('@')[0]; // Use part of email if name not provided
+    const profilePicture = userData.picture || null;
+    
+    console.log('Processing user with googleId:', googleId);
     
     // Find existing user or create new one
-    let user = await User.findOne({ googleId });
-    
-    if (!user) {
-      // Check if user exists with this email
-      user = await User.findOne({ email });
+    let user = null;
+    try {
+      user = await User.findOne({ googleId });
+      console.log('User by googleId:', user ? 'found' : 'not found');
       
-      if (user) {
-        // Update existing user with Google info
-        user.googleId = googleId;
-        user.authProvider = 'google';
-        if (!user.profilePicture) {
-          user.profilePicture = profilePicture;
+      if (!user) {
+        // Check if user exists with this email
+        user = await User.findOne({ email });
+        console.log('User by email:', user ? 'found' : 'not found');
+        
+        if (user) {
+          console.log('Updating existing user with Google info');
+          // Update existing user with Google info
+          user.googleId = googleId;
+          user.authProvider = 'google';
+          if (!user.profilePicture) {
+            user.profilePicture = profilePicture;
+          }
+        } else {
+          console.log('Creating new user with Google info');
+          // Create new user
+          user = new User({
+            name,
+            email,
+            googleId,
+            profilePicture,
+            authProvider: 'google'
+          });
         }
-      } else {
-        // Create new user
-        user = new User({
-          name,
-          email,
-          googleId,
-          profilePicture,
-          authProvider: 'google'
-        });
+        
+        await user.save();
+        console.log('User saved successfully');
       }
-      
-      await user.save();
+    } catch (dbError) {
+      console.error('Database error during user lookup/creation:', dbError);
+      return res.status(500).json({ message: 'Database error processing user account' });
     }
     
     // Generate JWT token
@@ -201,6 +245,21 @@ router.post('/google', async (req, res) => {
     });
   } catch (error) {
     console.error('Google auth error:', error);
+    console.error('Error details:', error.message);
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+    }
+    
+    // Send more specific error messages based on error type
+    if (error.message.includes('jwt')) {
+      return res.status(400).json({ message: 'Invalid Google token format. Please try again.' });
+    } else if (error.message.includes('network') || error.message.includes('connection')) {
+      return res.status(503).json({ message: 'Unable to connect to Google services. Please try again later.' });
+    } else if (error.code === 11000) {
+      return res.status(409).json({ message: 'User with this email already exists but with different authentication.' });
+    }
+    
     res.status(500).json({ message: 'Error with Google authentication. Please try again.' });
   }
 });

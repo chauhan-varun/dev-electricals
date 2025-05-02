@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getProductById } from '../services/api';
 import { CartContext } from '../contexts/CartContext';
-import { toast } from 'react-hot-toast';
+import { useNotification } from '../contexts/NotificationContext';
 import { isCloudinaryUrl, optimizeCloudinaryDetailUrl, getPlaceholderImage } from '../utils/cloudinary';
 import Loader from '../components/UI/Loader';
 
@@ -13,6 +13,7 @@ const ProductDetailPage = () => {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useContext(CartContext);
+  const { showSuccess } = useNotification();
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -52,7 +53,7 @@ const ProductDetailPage = () => {
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
-    toast.success(`${quantity} ${product.title} added to cart!`);
+    showSuccess(`${quantity} ${product.title} added to cart!`);
   };
 
   // Get the optimized image URL for detail view

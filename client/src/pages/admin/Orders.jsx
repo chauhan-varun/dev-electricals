@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getOrders, updateOrderStatus } from '../../services/api';
-import { toast } from 'react-hot-toast';
+import { useNotification } from '../../contexts/NotificationContext';
 import {
   CheckCircleIcon,
   ClockIcon,
@@ -32,6 +32,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
+  const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
     fetchOrders();
@@ -65,7 +66,7 @@ const Orders = () => {
       setOrders(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      toast.error('Failed to load orders. Please check server connection.');
+      showError('Failed to load orders. Please check server connection.');
       setOrders([]);
     } finally {
       setLoading(false);
@@ -100,14 +101,14 @@ const Orders = () => {
         order._id === orderId ? { ...order, status: newStatus } : order
       ));
       
-      toast.success(`Order status updated to ${newStatus}`);
+      showSuccess(`Order status updated to ${newStatus}`);
       
       if (selectedOrder && selectedOrder._id === orderId) {
         setSelectedOrder({ ...selectedOrder, status: newStatus });
       }
     } catch (error) {
       console.error('Error updating order status:', error);
-      toast.error('Failed to update order status. Please try again.');
+      showError('Failed to update order status. Please try again.');
     }
   };
 

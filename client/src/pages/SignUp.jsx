@@ -2,7 +2,7 @@ import { useState } from 'react';
 import api, { authApi } from '../utils/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import GoogleAuthButton from '../components/GoogleAuthButton';
-import toast from 'react-hot-toast';
+import { useNotification } from '../contexts/NotificationContext';
 import { useAuth } from '../contexts/AuthContext';
 
 const SignUp = () => {
@@ -15,6 +15,7 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showSuccess, showError } = useNotification();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,16 +29,11 @@ const SignUp = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Clear any existing toasts
-    toast.dismiss();
+    // Prepare signup process
     
     // Validation checks
     if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long', {
-        position: 'top-center',
-        duration: 4000,
-        style: { background: '#EF4444', color: 'white' }
-      });
+      showError('Password must be at least 6 characters long', 4000);
       setIsLoading(false);
       return;
     }
@@ -54,11 +50,7 @@ const SignUp = () => {
       });
       console.log('Signup response:', response.data);
       
-      toast.success('Registration successful! Redirecting to sign in...', {
-        position: 'top-center',
-        duration: 4000,
-        style: { background: '#10B981', color: 'white' }
-      });
+      showSuccess('Registration successful! Redirecting to sign in...', 4000);
       
       setTimeout(() => {
         navigate('/signin');
@@ -77,11 +69,7 @@ const SignUp = () => {
         console.error('Request error:', error.message);
       }
       
-      toast.error(errorMessage, {
-        position: 'top-center',
-        duration: 4000,
-        style: { background: '#EF4444', color: 'white' }
-      });
+      showError(errorMessage, 4000);
     } finally {
       setIsLoading(false);
     }
