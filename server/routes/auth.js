@@ -202,37 +202,77 @@ router.post('/google', async (req, res) => {
     
     // Find existing user or create new one
     let user = null;
+    // Find or create user safely with proper error handling
     try {
+      // First, try to find user by googleId
       user = await User.findOne({ googleId });
       console.log('User by googleId:', user ? 'found' : 'not found');
       
-      if (!user) {
-        // Check if user exists with this email
+      if (user) {
+        // User found by googleId, nothing more to do
+        console.log('Existing Google user found');
+      } else {
+        // Try to find user by email
         user = await User.findOne({ email });
         console.log('User by email:', user ? 'found' : 'not found');
         
         if (user) {
           console.log('Updating existing user with Google info');
+          
           // Update existing user with Google info
-          user.googleId = googleId;
-          user.authProvider = 'google';
-          if (!user.profilePicture) {
-            user.profilePicture = profilePicture;
+          try {
+            user.googleId = googleId;
+            user.authProvider = 'google';
+            if (!user.profilePicture && profilePicture) {
+              user.profilePicture = profilePicture;
+            }
+            
+            await user.save();
+            console.log('Existing user updated with Google info successfully');
+          } catch (updateError) {
+            console.error('Error updating existing user with Google info:', updateError);
+            // Don't return error here - we can still authenticate with existing user data
+            // Just log the error and continue with the authentication process
           }
         } else {
           console.log('Creating new user with Google info');
+          
           // Create new user
-          user = new User({
-            name,
-            email,
-            googleId,
-            profilePicture,
-            authProvider: 'google'
-          });
+          try {
+            user = new User({
+              name,
+              email,
+              googleId,
+              profilePicture,
+              authProvider: 'google'
+            });
+            
+            await user.save();
+            console.log('New Google user created successfully');
+          } catch (createError) {
+            console.error('Error creating new Google user:', createError);
+            
+            // Check if this is a duplicate key error (which can happen in race conditions)
+            if (createError.code === 11000) {
+              // Try to get the user one more time
+              const existingUser = await User.findOne({ email });
+              if (existingUser) {
+                console.log('User found after race condition, using existing user');
+                user = existingUser;
+              } else {
+                return res.status(500).json({ message: 'Could not create or find user account' });
+              }
+            } else {
+              return res.status(500).json({ message: 'Database error creating user account' });
+            }
+          }
         }
-        
-        await user.save();
-        console.log('User saved successfully');
+      }
+      
+      // At this point, user should be defined one way or another
+      if (!user) {
+        console.error('User is still null after all operations');
+        return res.status(500).json({ message: 'Failed to process user account' });
       }
     } catch (dbError) {
       console.error('Database error during user lookup/creation:', dbError);
@@ -266,6 +306,12 @@ router.post('/google', async (req, res) => {
       return res.status(503).json({ message: 'Unable to connect to Google services. Please try again later.' });
     } else if (error.code === 11000) {
       return res.status(409).json({ message: 'User with this email already exists but with different authentication.' });
+    } else if (error.name === 'MongoServerError') {
+      // Handle specific MongoDB server errors
+      return res.status(500).json({ message: 'Database server error. Please try again later.' });
+    } else if (error.name === 'ValidationError') {
+      // Handle Mongoose validation errors
+      return res.status(400).json({ message: 'Invalid user data format.' });
     }
     
     res.status(500).json({ message: 'Error with Google authentication. Please try again.' });
