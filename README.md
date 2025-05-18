@@ -4,6 +4,16 @@
 
 Dev Electricals is a comprehensive web platform for an electrical products and services business. This full-stack application enables customers to purchase electrical products, request services, schedule repairs, and even sell their used electrical items. The platform includes both client-facing and admin interfaces to streamline business operations.
 
+## Project Video
+
+Watch the project demonstration video here:  
+[Project Video](https://drive.google.com/file/d/1VG-PHhT7dvIMPxuUZEW_xLf7rXajUKjY/view?usp=drivesdk)
+
+## Project Presentation
+
+View the project presentation here:  
+[Project Presentation](https://docs.google.com/presentation/d/1VcPLatafZq3COcyTQvIZWkQobp5dhVH7/edit?usp=drivesdk&ouid=100411059125225380717&rtpof=true&sd=true)
+
 ## Team Details
 
 **Leader:** Varun Chauhan (Roll No: 2401010276)
